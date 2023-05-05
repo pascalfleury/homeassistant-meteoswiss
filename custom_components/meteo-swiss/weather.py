@@ -70,7 +70,7 @@ class MeteoSwissWeather(
     def __set_data(self, data: dict[str, Any]):
         self._displayName = data[CONF_FORECAST_NAME]
         self._forecastData = data["forecast"]
-        self._condition = data["condition"]
+        self._condition = data["condition"][0]
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -84,7 +84,7 @@ class MeteoSwissWeather(
             # Real-time weather station provides no data.
             return
         try:
-            metric = self._condition[0][metric_key]
+            metric = self._condition[metric_key]
             _LOGGER.debug("Getting %s (%s) -> %s", metric_name, metric_key, metric)
             if metric is None or metric == '-':
                 return
