@@ -122,7 +122,7 @@ class MeteoSwissWeather(
 
     @property
     def wind_bearing(self):
-        return self.__get_float("wind bearing", "dkl010z0")
+        return self.__get_float("wind bearing", "dv1towz0") # "dkl010z0")
 
     @property
     def state(self):
