@@ -84,7 +84,11 @@ class MeteoSwissWeather(
             # Real-time weather station provides no data.
             return
         try:
-            return float(self._condition[0][metric_key])
+            metric = self._condition[0][metric_key]
+            _LOGGER.debug("Getting %s (%s) -> %s", metric_name, metric_key, metric)
+            if metric is None or metric == '-':
+                return
+            return float(metric)
         except Exception:
             _LOGGER.exception("Error converting %s: %s", metric_name, self._condition)
 
