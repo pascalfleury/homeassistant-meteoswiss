@@ -85,7 +85,7 @@ class MeteoSwissWeather(
             return
         try:
             metric = self._condition[metric_key]
-            _LOGGER.debug("Getting %s (%s) -> %s", metric_name, metric_key, metric)
+            _LOGGER.debug('Getting %s (%s) -> "%s"', metric_name, metric_key, metric)
             if metric is None or metric == '-':
                 return
             return float(metric)
