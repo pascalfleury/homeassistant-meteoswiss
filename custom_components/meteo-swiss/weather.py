@@ -79,58 +79,46 @@ class MeteoSwissWeather(
         self.__set_data(data)
         self.async_write_ha_state()
 
+    def __get_float(self, metric_name, metric_key):
+        if not self._condition:
+            # Real-time weather station provides no data.
+            return
+        try:
+            return float(self._condition[0][metric_key])
+        except Exception:
+            _LOGGER.exception("Error converting %s: %s", metric_name, self._condition)
+
     @property
     def name(self):
         return self._displayName
 
     @property
     def native_temperature(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["tre200s0"])
-        except Exception:
-            _LOGGER.exception("Error converting temp: %s", self._condition)
+        return self.__get_float("temperature", "tre200s0");
 
     @property
     def native_pressure(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["prestas0"])
-        except Exception:
-            _LOGGER.exception(
-                "Error converting pressure (qfe): %s",
-                self._condition,
-            )
+        return self.__get_float("pressure (qfe)", "prestas0")
 
     @property
     def pressure_qff(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self.condition[0]["pp0qffs0"])
-        except Exception:
-            _LOGGER.exception(
-                "Error converting pressure (qff): %s",
-                self._condition,
-            )
+        return self.__get_float("pressure (qff)", "pp0qffs0")
 
     @property
     def pressure_qnh(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self.condition[0]["pp0qnhs0"])
-        except Exception:
-            _LOGGER.exception(
-                "Error converting pressure (qnh): %s",
-                self._condition,
-            )
+        return self.__get_float("pressure (qnh)", "pp0qnhs0")
+
+    @property
+    def humidity(self):
+        return self.__get_float("humidity", "ure200s0")
+
+    @property
+    def native_wind_speed(self):
+        return self.__get_float("wind speed", "fu3010z0")
+
+    @property
+    def wind_bearing(self):
+        return self.__get_float("wind bearing", "dkl010z0")
 
     @property
     def state(self):
@@ -150,32 +138,6 @@ class MeteoSwissWeather(
         return self._forecastData["currentWeather"]["icon"]
 
     @property
-    def humidity(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["ure200s0"])
-        except Exception:
-            _LOGGER.exception(
-                "Unable to convert humidity value: %s",
-                self._condition,
-            )
-
-    @property
-    def native_wind_speed(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["fu3010z0"])
-        except Exception:
-            _LOGGER.exception(
-                "Unable to convert windSpeed value: %s",
-                self._condition,
-            )
-
-    @property
     def attribution(self):
         a = "Data provided by MeteoSwiss."
         a += "  Forecasts from postal code %s." % (self._attr_post_code,)
@@ -186,19 +148,6 @@ class MeteoSwissWeather(
             url = "https://rudd-o.com/meteostations"
             a += "  Stations available at %s ." % (url,)
         return a
-
-    @property
-    def wind_bearing(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return self._condition[0]["dkl010z0"]
-        except Exception:
-            _LOGGER.exception(
-                "Unable to get wind_bearing from data: %s",
-                self._condition,
-            )
 
     @property
     def forecast(self):
