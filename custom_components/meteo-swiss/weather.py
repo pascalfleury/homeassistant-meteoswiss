@@ -85,7 +85,7 @@ class MeteoSwissWeather(
             return
         try:
             metric = self._condition[metric_key]
-            if metric is None or metric = '-':
+            if metric is None or metric == '-':
                 return
             return float(metric)
         except Exception:
