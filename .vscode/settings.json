@@ -6,5 +6,15 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/../hamsclientfork"
     ],
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "python.linting.mypyEnabled": true,
+    "[python]": {
+        "editor.codeActionsOnSave": [
+            "source.organizeImports"
+        ],
+    },
+    "python.analysis.fixAll": [
+        "source.convertImportFormat",
+        "source.unusedImports"
+    ]
 }
