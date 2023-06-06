@@ -1,6 +1,5 @@
 import datetime
 import logging
-
 from typing import Any
 
 from homeassistant.components.weather import (
@@ -10,29 +9,25 @@ from homeassistant.components.weather import (
     ATTR_FORECAST_TIME,
     WeatherEntity,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    TEMP_CELSIUS,
-    SPEED_KILOMETERS_PER_HOUR,
     PRESSURE_HPA,
+    SPEED_KILOMETERS_PER_HOUR,
+    STATE_UNAVAILABLE,
+    TEMP_CELSIUS,
 )
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-
-from .const import (
+from custom_components.meteoswiss import MeteoSwissDataUpdateCoordinator
+from custom_components.meteoswiss.const import (
+    CONDITION_CLASSES,
     CONF_FORECAST_NAME,
     CONF_POSTCODE,
     CONF_STATION,
-    CONDITION_CLASSES,
     DOMAIN,
 )
-
-
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from . import MeteoSwissDataUpdateCoordinator
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -135,16 +130,31 @@ class MeteoSwissWeather(
     @property
     def state(self):
         symbolId = self._forecastData["currentWeather"]["icon"]
-        cond = next(
-            (k for k, v in CONDITION_CLASSES.items() if int(symbolId) in v),
-            None,
-        )
-        _LOGGER.debug(
-            "Current symbol is %s condition is: %s",
-            symbolId,
-            cond,
-        )
-        return cond
+        try:
+            cond = next(
+                (k for k, v in CONDITION_CLASSES.items() if int(symbolId) in v),
+                None,
+            )
+            if cond is None:
+                _LOGGER.error(
+                    "Expected a known int for the forecast icon, not None",
+                    symbolId,
+                )
+                return STATE_UNAVAILABLE
+            _LOGGER.debug(
+                "Current symbol is %s condition is: %s",
+                symbolId,
+                cond,
+            )
+            return cond
+        except TypeError as exc:
+            _LOGGER.error(
+                "Expected an int, not %r, to decide on the forecast icon: %s",
+                symbolId,
+                exc,
+            )
+            _LOGGER.error("Forecast data: %r", self._forecastData)
+            return STATE_UNAVAILABLE
 
     def msSymboldId(self):
         return self._forecastData["currentWeather"]["icon"]
