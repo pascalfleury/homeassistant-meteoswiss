@@ -28,11 +28,11 @@ See below for common issues.
 
 ### Removal of the obsolete integration
 
-* Remove the integration from your HACS integrations screen.
+* Remove the old integration from your HACS integrations screen.
   * Go into the integration within the HACS integrations screen.
   * Click on the three dots menu at the upper right corner.
   * Select *Remove*.
-* Remove the repository.
+* Remove the repository from your HACS setup.
   * In the HACS integration screen, click the three dots menu.
   * Delete the integration from the *Custom repositories* dialog.
 * Remove the config entry.
