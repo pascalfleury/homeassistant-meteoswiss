@@ -2,6 +2,13 @@
 
 This is the Meteo Swiss integration for Home Assistant.
 
+**Note: due to changes in how HACS loads custom components
+(reflected in hassfest validation tests), we have had to
+change how this repository is installed.  Unfortunately,
+this caused problems with how an interim version of the
+integratoin itself is loaded.  See installation instructions
+below to get your setup fixed up.**
+
 ## Features
 
 * Interactive setup flow with reasonably good explanations of the
@@ -19,7 +26,13 @@ See below for common issues.
 
 ## Installation
 
-*Instructions on migration from the old unmaintained version are below.*
+### Removal of the obsolete integration
+
+* Change into your Home Assistant configuration directory.
+* Delete folder `custom_components/meteo-swiss`.
+* Proceed with installation.
+
+### Installation of the updated integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
