@@ -11,7 +11,7 @@ from homeassistant.const import (
     TIME_MINUTES,
 )
 
-DOMAIN = "meteo-swiss"
+DOMAIN = "meteoswiss"
 CONF_FORECAST_NAME = "forecast_name"
 CONF_NAME = CONF_NAME
 CONF_POSTCODE = "postcode"
