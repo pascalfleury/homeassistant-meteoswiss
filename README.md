@@ -36,14 +36,21 @@ See below for common issues.
   * In the HACS integration screen, click the three dots menu.
   * Delete the integration from the *Custom repositories* dialog.
 * Remove the config entry.
+  * Write down the names you have given to your existing weather and
+    sensor entities.
   * In the Devices & Services settings screen, locate the integration
     configuration entry, then click its three-dots menu.
   * Select *Delete*.
 * Stop Home Assistant.
 * Change into your Home Assistant configuration directory.
-* Verify the folder `custom_components/meteo-swiss` is nonexistent.
+* Verify the folder `custom_components/meteo-swiss` is nonexistent
+  under the Home Assistant configuration directory.  Note the dash!
 * Start Home Assistant.
 * Proceed with installation.
+  * Once you get to the setup stage, when you are asked for the
+    names of the weather and sensor entities, re-use the same
+    names you used before.  Your statistics will then be preserved
+    from the old entities managed by the old integration.
 
 ### Installation of the updated integration
 
