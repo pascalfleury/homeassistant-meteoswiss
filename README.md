@@ -28,6 +28,9 @@ See below for common issues.
 
 ### Removal of the obsolete integration
 
+*You only need to do this if you had either Websylv's integration
+or an older version of this integration installed and setup.*
+
 * Remove the old integration from your HACS integrations screen.
   * Go into the integration within the HACS integrations screen.
   * Click on the three dots menu at the upper right corner.
