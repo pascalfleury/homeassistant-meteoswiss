@@ -3,16 +3,23 @@ import datetime
 import logging
 import pprint
 import time
+from typing import Any, cast
 
 from async_timeout import timeout
-from typing import Any
-from homeassistant.core import Config, HomeAssistant
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.helpers.typing import HomeAssistantType
 from hamsclientfork import meteoSwissClient
+from hamsclientfork.client import ClientResult
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import Config, HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.issue_registry import IssueSeverity
+from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 
-from .const import (
+from custom_components.meteoswiss.const import (
     CONF_FORECAST_NAME,
     CONF_NAME,
     CONF_POSTCODE,
@@ -22,12 +29,6 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
 )
-from homeassistant.const import Platform
-from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
-from homeassistant.helpers import issue_registry as ir
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR, Platform.WEATHER]
@@ -125,8 +126,17 @@ async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
     return unload_ok
 
 
+class MeteoSwissClientResult(ClientResult):
+    station: str
+    post_code: str
+    forecast_name: str
+    real_time_name: str
+
+
 class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Class to manage fetching AccuWeather data API."""
+
+    data: MeteoSwissClientResult
 
     def __init__(
         self,
@@ -138,7 +148,7 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         real_time_name: str | None,
     ) -> None:
         """Initialize."""
-        self.first_error = None
+        self.first_error: float | None = None
         self.error_raised = False
         self.hass = hass
         self.post_code = post_code
@@ -174,12 +184,12 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=update_interval,
         )
 
-    async def _async_update_data(self) -> dict[str, Any]:
+    async def _async_update_data(self) -> MeteoSwissClientResult:
         """Update data via library."""
         try:
             async with timeout(15):
                 data = await self.hass.async_add_executor_job(
-                    self.client.get_data,
+                    self.client.get_typed_data,
                 )
         except Exception as exc:
             raise UpdateFailed(exc) from exc
@@ -214,6 +224,10 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     )
                     self.error_raised = True
             else:
+                if self.error_raised:
+                    ir.async_delete_issue(
+                        self.hass, DOMAIN, f"{self.station}_provides_no_data_{DOMAIN}"
+                    )
                 self.first_error = None
                 self.error_raised = False
 
@@ -221,4 +235,4 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         data[CONF_POSTCODE] = self.post_code
         data[CONF_FORECAST_NAME] = self.forecast_name
         data[CONF_REAL_TIME_NAME] = self.real_time_name
-        return data
+        return cast(MeteoSwissClientResult, data)

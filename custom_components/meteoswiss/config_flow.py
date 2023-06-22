@@ -1,11 +1,15 @@
 """Config flow to configure the Meteo-Swiss integration."""
 import logging
-
 import re
+from typing import Any
+
 import voluptuous as vol
+from hamsclientfork import StationType, meteoSwissClient
 from homeassistant import config_entries
-from .const import (
-    DOMAIN,
+from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.issue_registry import IssueSeverity
+
+from custom_components.meteoswiss.const import (
     CONF_FORECAST_NAME,
     CONF_LAT,
     CONF_LON,
@@ -15,12 +19,8 @@ from .const import (
     CONF_STATION,
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
+    DOMAIN,
 )
-from hamsclientfork import meteoSwissClient, StationType
-from homeassistant.helpers.issue_registry import IssueSeverity
-from homeassistant.helpers import issue_registry as ir
-from typing import Any
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 NO_STATION = "No real-time weather station"
 
 
-class MeteoSwissFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+class MeteoSwissFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):  # type:ignore
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL

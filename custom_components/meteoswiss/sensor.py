@@ -1,31 +1,27 @@
 import logging
 import pprint
 
-
 from homeassistant.components.sensor import (
     SensorEntity,
 )
-
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from . import MeteoSwissDataUpdateCoordinator
 
-from homeassistant.const import STATE_UNAVAILABLE
-
-from .const import (
+from custom_components.meteoswiss import MeteoSwissDataUpdateCoordinator
+from custom_components.meteoswiss.const import (
     CONF_POSTCODE,
     CONF_REAL_TIME_NAME,
     CONF_STATION,
     DOMAIN,
-    SENSOR_TYPES,
+    SENSOR_DATA_ID,
     SENSOR_TYPE_CLASS,
     SENSOR_TYPE_ICON,
     SENSOR_TYPE_NAME,
     SENSOR_TYPE_UNIT,
-    SENSOR_DATA_ID,
+    SENSOR_TYPES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,8 +65,8 @@ class MeteoSwissSensor(
         self._state = None
         self._type = sensor_type
         self._data = coordinator.data
-        self._attr_station = coordinator.data[CONF_STATION]
-        self._attr_post_code = coordinator.data[CONF_POSTCODE]
+        self._attr_station = coordinator.data[CONF_STATION]  # type: ignore
+        self._attr_post_code = coordinator.data[CONF_POSTCODE]  # type: ignore
 
     @property
     def name(self):

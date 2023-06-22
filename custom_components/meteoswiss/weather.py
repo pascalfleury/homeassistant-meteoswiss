@@ -1,7 +1,7 @@
-import datetime
 import logging
-from typing import Any
+from typing import cast
 
+from hamsclientfork.client import DayForecast
 from homeassistant.components.weather import (
     ATTR_FORECAST_CONDITION,
     ATTR_FORECAST_NATIVE_TEMP,
@@ -20,7 +20,10 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from custom_components.meteoswiss import MeteoSwissDataUpdateCoordinator
+from custom_components.meteoswiss import (
+    MeteoSwissClientResult,
+    MeteoSwissDataUpdateCoordinator,
+)
 from custom_components.meteoswiss.const import (
     CONDITION_CLASSES,
     CONF_FORECAST_NAME,
@@ -62,7 +65,7 @@ class MeteoSwissWeather(
         self._attr_post_code = coordinator.data[CONF_POSTCODE]
         self.__set_data(coordinator.data)
 
-    def __set_data(self, data: dict[str, Any]):
+    def __set_data(self, data: MeteoSwissClientResult) -> None:
         self._displayName = data[CONF_FORECAST_NAME]
         self._forecastData = data["forecast"]
         self._condition = data["condition"]
@@ -212,15 +215,13 @@ class MeteoSwissWeather(
 
     @property
     def forecast(self):
-        currentDate = datetime.datetime.now()
-        one_day = datetime.timedelta(days=1)
         fcdata_out = []
         # Skip the first element - it's the forecast for the current day
-        for forecast in self._forecastData["regionForecast"][1:]:
+        for untyped_forecast in self._forecastData["regionForecast"]:
+            forecast = cast(DayForecast, untyped_forecast)
             # calculating date of the forecast
-            currentDate = currentDate + one_day
             data_out = {}
-            data_out[ATTR_FORECAST_TIME] = currentDate.strftime("%Y-%m-%d")
+            data_out[ATTR_FORECAST_TIME] = forecast["dayDate"]
             data_out[ATTR_FORECAST_NATIVE_TEMP_LOW] = float(
                 forecast["temperatureMin"],
             )
