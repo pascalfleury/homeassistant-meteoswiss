@@ -1,36 +1,30 @@
+"""Support for the MeteoSwiss service."""
+from __future__ import annotations
+
 import logging
 from typing import cast
 
 from hamsclientfork.client import DayForecast
-from homeassistant.components.weather import (
-    ATTR_FORECAST_CONDITION,
-    ATTR_FORECAST_NATIVE_TEMP,
-    ATTR_FORECAST_NATIVE_TEMP_LOW,
-    ATTR_FORECAST_TIME,
-    WeatherEntity,
-)
+from homeassistant.components.weather import (ATTR_FORECAST_CONDITION,
+                                              ATTR_FORECAST_NATIVE_TEMP,
+                                              ATTR_FORECAST_NATIVE_TEMP_LOW,
+                                              ATTR_FORECAST_TIME, Forecast,
+                                              WeatherEntity,
+                                              WeatherEntityFeature)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    PRESSURE_HPA,
-    SPEED_KILOMETERS_PER_HOUR,
-    STATE_UNAVAILABLE,
-    TEMP_CELSIUS,
-)
+from homeassistant.const import (PRESSURE_HPA, SPEED_KILOMETERS_PER_HOUR,
+                                 STATE_UNAVAILABLE, TEMP_CELSIUS)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from custom_components.meteoswiss import (
-    MeteoSwissClientResult,
-    MeteoSwissDataUpdateCoordinator,
-)
-from custom_components.meteoswiss.const import (
-    CONDITION_CLASSES,
-    CONF_FORECAST_NAME,
-    CONF_POSTCODE,
-    CONF_STATION,
-    DOMAIN,
-)
+from custom_components.meteoswiss import (MeteoSwissClientResult,
+                                          MeteoSwissDataUpdateCoordinator)
+from custom_components.meteoswiss.const import (CONDITION_CLASSES,
+                                                CONDITION_MAP,
+                                                CONF_FORECAST_NAME,
+                                                CONF_POSTCODE, CONF_STATION,
+                                                DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +33,9 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     """Set up weather entity."""
-    _LOGGER.debug("Starting async setup platform for weather")
+    _LOGGER.debug("Add a MeteoSwiss weather entity from a config_entry")
     c: MeteoSwissDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([MeteoSwissWeather(entry.entry_id, c)], True)
 
@@ -50,9 +44,11 @@ class MeteoSwissWeather(
     CoordinatorEntity[MeteoSwissDataUpdateCoordinator],
     WeatherEntity,
 ):
+    _attr_has_entity_name = True
     _attr_native_temperature_unit = TEMP_CELSIUS
     _attr_native_pressure_unit = PRESSURE_HPA
     _attr_native_wind_speed_unit = SPEED_KILOMETERS_PER_HOUR
+    _attr_supported_features = WeatherEntityFeature.FORECAST_DAILY
 
     def __init__(
         self,
@@ -213,8 +209,7 @@ class MeteoSwissWeather(
                 self._condition,
             )
 
-    @property
-    def forecast(self):
+    def _forecast(self) -> list[Forecast] | None:
         fcdata_out = []
         # Skip the first element - it's the forecast for the current day
         for untyped_forecast in self._forecastData["regionForecast"]:
@@ -228,13 +223,16 @@ class MeteoSwissWeather(
             data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
                 forecast["temperatureMax"],
             )
-            data_out[ATTR_FORECAST_CONDITION] = next(
-                (
-                    k
-                    for k, v in CONDITION_CLASSES.items()
-                    if int(forecast["iconDay"]) in v
-                ),
-                None,
-            )
+            data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(
+                forecast["iconDay"])
             fcdata_out.append(data_out)
         return fcdata_out
+
+    @property
+    def forecast(self) -> list[Forecast]:
+        """Return the forecast array."""
+        return self._forecast()
+
+    async def async_forecast_daily(self) -> list[Forecast] | None:
+        """Return the daily forecast in native units."""
+        return self._forecast()
