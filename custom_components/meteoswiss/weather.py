@@ -46,6 +46,29 @@ async def async_setup_entry(
     async_add_entities([MeteoSwissWeather(entry.entry_id, c)], True)
 
 
+def condition_name_to_value(condition, name: str) -> float | None:
+    if not condition:
+        # Real-time weather station provides no data.
+        return
+    try:
+        row = condition[0]
+    except Exception:
+        _LOGGER.exception("Current condition has no rows: %s", condition)
+        return
+    try:
+        value = row[name]
+    except Exception:
+        _LOGGER.exception("Current condition has no value for %s", name)
+        return
+    if value is None:
+        _LOGGER.debug("Value %s of current condition is None -- not available", name)
+        return
+    try:
+        return float(value)
+    except Exception as e:
+        _LOGGER.exception("Error converting %s to float: %s", value, e)
+
+
 class MeteoSwissWeather(
     CoordinatorEntity[MeteoSwissDataUpdateCoordinator],
     WeatherEntity,
@@ -83,52 +106,31 @@ class MeteoSwissWeather(
 
     @property
     def native_temperature(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["tre200s0"])
-        except Exception:
-            _LOGGER.exception("Error converting temp: %s", self._condition)
+        return condition_name_to_value(self._condition, "tre200s0")
 
     @property
     def native_pressure(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["prestas0"])
-        except Exception:
-            _LOGGER.exception(
-                "Error converting pressure (qfe): %s",
-                self._condition,
-            )
+        return condition_name_to_value(self._condition, "prestas0")
 
     @property
     def pressure_qff(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self.condition[0]["pp0qffs0"])
-        except Exception:
-            _LOGGER.exception(
-                "Error converting pressure (qff): %s",
-                self._condition,
-            )
+        return condition_name_to_value(self._condition, "pp0qffs0")
 
     @property
     def pressure_qnh(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self.condition[0]["pp0qnhs0"])
-        except Exception:
-            _LOGGER.exception(
-                "Error converting pressure (qnh): %s",
-                self._condition,
-            )
+        return condition_name_to_value(self._condition, "pp0qnhs0")
+
+    @property
+    def humidity(self):
+        return condition_name_to_value(self._condition, "ure200s0")
+
+    @property
+    def native_wind_speed(self):
+        return condition_name_to_value(self._condition, "fu3010z0")
+
+    @property
+    def wind_bearing(self):
+        return condition_name_to_value(self._condition, "dkl010z0")
 
     @property
     def state(self):
@@ -163,32 +165,6 @@ class MeteoSwissWeather(
         return self._forecastData["currentWeather"]["icon"]
 
     @property
-    def humidity(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["ure200s0"])
-        except Exception:
-            _LOGGER.exception(
-                "Unable to convert humidity value: %s",
-                self._condition,
-            )
-
-    @property
-    def native_wind_speed(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return float(self._condition[0]["fu3010z0"])
-        except Exception:
-            _LOGGER.exception(
-                "Unable to convert windSpeed value: %s",
-                self._condition,
-            )
-
-    @property
     def attribution(self):
         a = "Data provided by MeteoSwiss."
         a += "  Forecasts from postal code %s." % (self._attr_post_code,)
@@ -199,19 +175,6 @@ class MeteoSwissWeather(
             url = "https://rudd-o.com/meteostations"
             a += "  Stations available at %s ." % (url,)
         return a
-
-    @property
-    def wind_bearing(self):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            return self._condition[0]["dkl010z0"]
-        except Exception:
-            _LOGGER.exception(
-                "Unable to get wind_bearing from data: %s",
-                self._condition,
-            )
 
     @property
     def forecast(self):
