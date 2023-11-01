@@ -40,6 +40,29 @@ async def async_setup_entry(
     async_add_entities([MeteoSwissWeather(entry.entry_id, c)], True)
 
 
+def condition_name_to_value(condition, name: str) -> float | None:
+    if not condition:
+        # Real-time weather station provides no data.
+        return
+    try:
+        row = condition[0]
+    except Exception:
+        _LOGGER.exception("Current condition has no rows: %s", condition)
+        return
+    try:
+        value = row[name]
+    except Exception:
+        _LOGGER.exception("Current condition has no value for %s", name)
+        return
+    if value is None:
+        _LOGGER.debug("Value %s of current condition is None -- not available", name)
+        return
+    try:
+        return float(value)
+    except Exception as e:
+        _LOGGER.exception("Error converting %s to float: %s", value, e)
+
+
 class MeteoSwissWeather(
     CoordinatorEntity[MeteoSwissDataUpdateCoordinator],
     WeatherEntity,
@@ -92,31 +115,31 @@ class MeteoSwissWeather(
 
     @property
     def native_temperature(self):
-        return self.__get_float("temperature", "tre200s0");
+        return condition_name_to_value(self._condition, "tre200s0")
 
     @property
     def native_pressure(self):
-        return self.__get_float("pressure (qfe)", "prestas0")
+        return condition_name_to_value(self._condition, "prestas0")
 
     @property
     def pressure_qff(self):
-        return self.__get_float("pressure (qff)", "pp0qffs0")
+        return condition_name_to_value(self._condition, "pp0qffs0")
 
     @property
     def pressure_qnh(self):
-        return self.__get_float("pressure (qnh)", "pp0qnhs0")
+        return condition_name_to_value(self._condition, "pp0qnhs0")
 
     @property
     def humidity(self):
-        return self.__get_float("humidity", "ure200s0")
+        return condition_name_to_value(self._condition, "ure200s0")
 
     @property
     def native_wind_speed(self):
-        return self.__get_float("wind speed", "fu3010z0")
+        return condition_name_to_value(self._condition, "fu3010z0")
 
     @property
     def wind_bearing(self):
-        return self.__get_float("wind bearing", "dkl010z0")
+        return condition_name_to_value(self._condition, "dkl010z0")
 
     @property
     def state(self):
