@@ -5,26 +5,38 @@ import logging
 from typing import cast
 
 from hamsclientfork.client import DayForecast
-from homeassistant.components.weather import (ATTR_FORECAST_CONDITION,
-                                              ATTR_FORECAST_NATIVE_TEMP,
-                                              ATTR_FORECAST_NATIVE_TEMP_LOW,
-                                              ATTR_FORECAST_TIME, Forecast,
-                                              WeatherEntity,
-                                              WeatherEntityFeature)
+from homeassistant.components.weather import (
+    ATTR_FORECAST_CONDITION,
+    ATTR_FORECAST_NATIVE_TEMP,
+    ATTR_FORECAST_NATIVE_TEMP_LOW,
+    ATTR_FORECAST_TIME,
+    Forecast,
+    WeatherEntity,
+    WeatherEntityFeature,
+)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (PRESSURE_HPA, SPEED_KILOMETERS_PER_HOUR,
-                                 STATE_UNAVAILABLE, TEMP_CELSIUS)
+from homeassistant.const import (
+    PRESSURE_HPA,
+    SPEED_KILOMETERS_PER_HOUR,
+    STATE_UNAVAILABLE,
+    TEMP_CELSIUS,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from custom_components.meteoswiss import (MeteoSwissClientResult,
-                                          MeteoSwissDataUpdateCoordinator)
-from custom_components.meteoswiss.const import (CONDITION_CLASSES,
-                                                CONDITION_MAP,
-                                                CONF_FORECAST_NAME,
-                                                CONF_POSTCODE, CONF_STATION,
-                                                DOMAIN)
+from custom_components.meteoswiss import (
+    MeteoSwissClientResult,
+    MeteoSwissDataUpdateCoordinator,
+)
+from custom_components.meteoswiss.const import (
+    CONDITION_CLASSES,
+    CONDITION_MAP,
+    CONF_FORECAST_NAME,
+    CONF_POSTCODE,
+    CONF_STATION,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,7 +99,7 @@ class MeteoSwissWeather(
     def __set_data(self, data: MeteoSwissClientResult) -> None:
         self._displayName = data[CONF_FORECAST_NAME]
         self._forecastData = data["forecast"]
-        self._condition = data["condition"][0]
+        self._condition = data["condition"]
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -95,19 +107,6 @@ class MeteoSwissWeather(
         data = self.coordinator.data
         self.__set_data(data)
         self.async_write_ha_state()
-
-    def __get_float(self, metric_name, metric_key):
-        if not self._condition:
-            # Real-time weather station provides no data.
-            return
-        try:
-            metric = self._condition[metric_key]
-            _LOGGER.debug("Getting %s (%s) -> %s", metric_name, metric_key, metric)
-            if metric is None or metric == '-':
-                return
-            return float(metric)
-        except Exception:
-            _LOGGER.exception("Error converting %s: %s", metric_name, self._condition)
 
     @property
     def name(self):
@@ -199,8 +198,7 @@ class MeteoSwissWeather(
             data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
                 forecast["temperatureMax"],
             )
-            data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(
-                forecast["iconDay"])
+            data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(forecast["iconDay"])
             fcdata_out.append(data_out)
         return fcdata_out
 

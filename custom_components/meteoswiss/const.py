@@ -4,11 +4,16 @@ from __future__ import annotations
 
 from typing import Final
 
-from homeassistant.const import (CONF_NAME, DEGREE,
-                                 IRRADIATION_WATTS_PER_SQUARE_METER,
-                                 PERCENTAGE, PRESSURE_HPA,
-                                 SPEED_KILOMETERS_PER_HOUR, TEMP_CELSIUS,
-                                 TIME_MINUTES)
+from homeassistant.const import (
+    CONF_NAME,
+    DEGREE,
+    IRRADIATION_WATTS_PER_SQUARE_METER,
+    PERCENTAGE,
+    PRESSURE_HPA,
+    SPEED_KILOMETERS_PER_HOUR,
+    TEMP_CELSIUS,
+    TIME_MINUTES,
+)
 
 DOMAIN = "meteoswiss"
 CONF_FORECAST_NAME = "forecast_name"
