@@ -37,7 +37,7 @@ MAX_CONTINUOUS_ERROR_TIME = 60 * 60
 
 async def async_setup(hass: HomeAssistant, config: Config):
     """Setup via old entry in configuration.yaml."""
-    _LOGGER.debug("Async setup meteo swiss")
+    _LOGGER.debug("Async setup: meteoswiss")
 
     conf = config.get(DOMAIN)
     if conf is None:
@@ -48,7 +48,7 @@ async def async_setup(hass: HomeAssistant, config: Config):
             DOMAIN, context={"source": SOURCE_IMPORT}, data=conf
         )
     )
-    _LOGGER.debug("END Async setup meteo swiss")
+    _LOGGER.debug("END Async setup: meteoswiss")
     return True
 
 
@@ -134,7 +134,7 @@ class MeteoSwissClientResult(ClientResult):
 
 
 class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Class to manage fetching AccuWeather data API."""
+    """Class to manage fetching MeteoSwiss data API."""
 
     data: MeteoSwissClientResult
 

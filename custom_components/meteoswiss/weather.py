@@ -66,13 +66,15 @@ def condition_name_to_value(condition, name: str) -> float | None:
     except Exception:
         _LOGGER.exception("Current condition has no value for %s", name)
         return
-    if value is None:
-        _LOGGER.debug("Value %s of current condition is None -- not available", name)
+    if value is None or value == "-":
+        _LOGGER.debug(
+            "Value %s of current condition is %s, so not available", name, value
+        )
         return
     try:
         return float(value)
-    except Exception as e:
-        _LOGGER.exception("Error converting %s to float: %s", value, e)
+    except Exception:
+        _LOGGER.exception("Error converting %s to float", value)
 
 
 class MeteoSwissWeather(
@@ -155,7 +157,7 @@ class MeteoSwissWeather(
                 )
                 return STATE_UNAVAILABLE
             _LOGGER.debug(
-                "Current symbol is %s condition is: %s",
+                "Current symbol is %s, condition is: %s",
                 symbolId,
                 cond,
             )
@@ -168,9 +170,6 @@ class MeteoSwissWeather(
             )
             _LOGGER.error("Forecast data: %r", self._forecastData)
             return STATE_UNAVAILABLE
-
-    def msSymboldId(self):
-        return self._forecastData["currentWeather"]["icon"]
 
     @property
     def attribution(self):
@@ -188,18 +187,23 @@ class MeteoSwissWeather(
         fcdata_out = []
         # Skip the first element - it's the forecast for the current day
         for untyped_forecast in self._forecastData["regionForecast"]:
-            forecast = cast(DayForecast, untyped_forecast)
-            # calculating date of the forecast
-            data_out = {}
-            data_out[ATTR_FORECAST_TIME] = forecast["dayDate"]
-            data_out[ATTR_FORECAST_NATIVE_TEMP_LOW] = float(
-                forecast["temperatureMin"],
-            )
-            data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
-                forecast["temperatureMax"],
-            )
-            data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(forecast["iconDay"])
-            fcdata_out.append(data_out)
+            try:
+                forecast = cast(DayForecast, untyped_forecast)
+                data_out = {}
+                data_out[ATTR_FORECAST_TIME] = forecast["dayDate"]
+                data_out[ATTR_FORECAST_NATIVE_TEMP_LOW] = float(
+                    forecast["temperatureMin"],
+                )
+                data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
+                    forecast["temperatureMax"],
+                )
+                data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(
+                    forecast["iconDay"]
+                )
+                _LOGGER.debug("Appending forecast: %s", data_out)
+                fcdata_out.append(data_out)
+            except Exception as e:
+                _LOGGER.error("Error while computing forecast: %s", e)
         return fcdata_out
 
     @property
