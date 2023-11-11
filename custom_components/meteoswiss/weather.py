@@ -1,3 +1,6 @@
+"""Support for the MeteoSwiss service."""
+from __future__ import annotations
+
 import logging
 from typing import cast
 
@@ -7,7 +10,9 @@ from homeassistant.components.weather import (
     ATTR_FORECAST_NATIVE_TEMP,
     ATTR_FORECAST_NATIVE_TEMP_LOW,
     ATTR_FORECAST_TIME,
+    Forecast,
     WeatherEntity,
+    WeatherEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -26,6 +31,7 @@ from custom_components.meteoswiss import (
 )
 from custom_components.meteoswiss.const import (
     CONDITION_CLASSES,
+    CONDITION_MAP,
     CONF_FORECAST_NAME,
     CONF_POSTCODE,
     CONF_STATION,
@@ -39,9 +45,9 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> None:
     """Set up weather entity."""
-    _LOGGER.debug("Starting async setup platform for weather")
+    _LOGGER.debug("Add a MeteoSwiss weather entity from a config_entry")
     c: MeteoSwissDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([MeteoSwissWeather(entry.entry_id, c)], True)
 
@@ -60,22 +66,26 @@ def condition_name_to_value(condition, name: str) -> float | None:
     except Exception:
         _LOGGER.exception("Current condition has no value for %s", name)
         return
-    if value is None:
-        _LOGGER.debug("Value %s of current condition is None -- not available", name)
+    if value is None or value == "-":
+        _LOGGER.debug(
+            "Value %s of current condition is %s, so not available", name, value
+        )
         return
     try:
         return float(value)
-    except Exception as e:
-        _LOGGER.exception("Error converting %s to float: %s", value, e)
+    except Exception:
+        _LOGGER.exception("Error converting %s to float", value)
 
 
 class MeteoSwissWeather(
     CoordinatorEntity[MeteoSwissDataUpdateCoordinator],
     WeatherEntity,
 ):
+    _attr_has_entity_name = True
     _attr_native_temperature_unit = TEMP_CELSIUS
     _attr_native_pressure_unit = PRESSURE_HPA
     _attr_native_wind_speed_unit = SPEED_KILOMETERS_PER_HOUR
+    _attr_supported_features = WeatherEntityFeature.FORECAST_DAILY
 
     def __init__(
         self,
@@ -147,7 +157,7 @@ class MeteoSwissWeather(
                 )
                 return STATE_UNAVAILABLE
             _LOGGER.debug(
-                "Current symbol is %s condition is: %s",
+                "Current symbol is %s, condition is: %s",
                 symbolId,
                 cond,
             )
@@ -161,9 +171,6 @@ class MeteoSwissWeather(
             _LOGGER.error("Forecast data: %r", self._forecastData)
             return STATE_UNAVAILABLE
 
-    def msSymboldId(self):
-        return self._forecastData["currentWeather"]["icon"]
-
     @property
     def attribution(self):
         a = "Data provided by MeteoSwiss."
@@ -176,28 +183,34 @@ class MeteoSwissWeather(
             a += "  Stations available at %s ." % (url,)
         return a
 
-    @property
-    def forecast(self):
+    def _forecast(self) -> list[Forecast] | None:
         fcdata_out = []
         # Skip the first element - it's the forecast for the current day
         for untyped_forecast in self._forecastData["regionForecast"]:
-            forecast = cast(DayForecast, untyped_forecast)
-            # calculating date of the forecast
-            data_out = {}
-            data_out[ATTR_FORECAST_TIME] = forecast["dayDate"]
-            data_out[ATTR_FORECAST_NATIVE_TEMP_LOW] = float(
-                forecast["temperatureMin"],
-            )
-            data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
-                forecast["temperatureMax"],
-            )
-            data_out[ATTR_FORECAST_CONDITION] = next(
-                (
-                    k
-                    for k, v in CONDITION_CLASSES.items()
-                    if int(forecast["iconDay"]) in v
-                ),
-                None,
-            )
-            fcdata_out.append(data_out)
+            try:
+                forecast = cast(DayForecast, untyped_forecast)
+                data_out = {}
+                data_out[ATTR_FORECAST_TIME] = forecast["dayDate"]
+                data_out[ATTR_FORECAST_NATIVE_TEMP_LOW] = float(
+                    forecast["temperatureMin"],
+                )
+                data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
+                    forecast["temperatureMax"],
+                )
+                data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(
+                    forecast["iconDay"]
+                )
+                _LOGGER.debug("Appending forecast: %s", data_out)
+                fcdata_out.append(data_out)
+            except Exception as e:
+                _LOGGER.error("Error while computing forecast: %s", e)
         return fcdata_out
+
+    @property
+    def forecast(self) -> list[Forecast]:
+        """Return the forecast array."""
+        return self._forecast()
+
+    async def async_forecast_daily(self) -> list[Forecast] | None:
+        """Return the daily forecast in native units."""
+        return self._forecast()
