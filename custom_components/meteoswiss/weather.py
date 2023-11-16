@@ -7,6 +7,7 @@ from typing import cast
 from hamsclientfork.client import DayForecast
 from homeassistant.components.weather import (
     ATTR_FORECAST_CONDITION,
+    ATTR_FORECAST_NATIVE_PRECIPITATION,
     ATTR_FORECAST_NATIVE_TEMP,
     ATTR_FORECAST_NATIVE_TEMP_LOW,
     ATTR_FORECAST_TIME,
@@ -199,6 +200,9 @@ class MeteoSwissWeather(
                 )
                 data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(
                     forecast["iconDay"]
+                )
+                data_out[ATTR_FORECAST_NATIVE_PRECIPITATION] = float(
+                    forecast["precipitation"],
                 )
                 _LOGGER.debug("Appending forecast: %s", data_out)
                 fcdata_out.append(data_out)
