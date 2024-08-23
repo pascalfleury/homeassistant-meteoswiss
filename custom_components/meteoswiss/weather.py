@@ -36,6 +36,9 @@ from custom_components.meteoswiss.const import (
     CODE_TO_CONDITION_MAP,
     CONF_FORECAST_NAME,
     CONF_POSTCODE,
+    CONF_PRECIPITATION_STATION,
+    CONF_REAL_TIME_NAME,
+    CONF_REAL_TIME_PRECIPITATION_NAME,
     CONF_STATION,
     DOMAIN,
 )
@@ -49,37 +52,45 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up weather entity."""
-    _LOGGER.debug("Add a MeteoSwiss weather entity from a config_entry")
     c: MeteoSwissDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([MeteoSwissWeather(entry.entry_id, c)], True)
 
 
-def condition_name_to_value(
+def condition_name_to_first_value(
     condition: None | list[CurrentCondition], name: str
 ) -> float | None:
     if not condition:
         # Real-time weather station provides no data.
+        _LOGGER.debug("Current condition is empty for all stations: %s", condition)
         return None
-    try:
-        row = condition[0]
-    except Exception:
-        _LOGGER.exception("Current condition has no rows: %s", condition)
-        return None
-    try:
-        value = row[name]  # type:ignore[literal-required]
-    except Exception:
-        _LOGGER.exception("Current condition has no value for %s", name)
-        return None
-    if value is None or value == "-":
-        _LOGGER.debug(
-            "Value %s of current condition is %s, so not available", name, value
-        )
-        return None
-    try:
-        return float(value)
-    except Exception:
-        _LOGGER.exception("Error converting %s to float", value)
-        return None
+    for n, row in enumerate(condition):
+        try:
+            value = row[name]  # type:ignore[literal-required]
+        except Exception:
+            _LOGGER.exception(
+                "Current condition %s (%s) has no value for %s", n, row, name
+            )
+            continue
+        if value is None or value == "-":
+            _LOGGER.debug(
+                "Value %s of current condition %s (%s) is %s, so not available",
+                name,
+                n,
+                row,
+                value,
+            )
+            continue
+        try:
+            return float(value)
+        except Exception:
+            _LOGGER.exception(
+                "Error converting %s to float for condition in row %s (%s)",
+                value,
+                n,
+                row,
+            )
+            continue
+    return None
 
 
 class MeteoSwissWeather(
@@ -101,14 +112,20 @@ class MeteoSwissWeather(
     ):
         super().__init__(coordinator)
         self._attr_unique_id = "weather.%s" % integration_id
-        self._attr_station = coordinator.data[CONF_STATION]
         self._attr_post_code = coordinator.data[CONF_POSTCODE]
+        self._attr_station = coordinator.data[CONF_STATION]
+        self._attr_weather_station = self._attr_station
+        self._attr_weather_station_name = coordinator.data[CONF_REAL_TIME_NAME]
+        self._attr_precipitation_station = coordinator.data[CONF_PRECIPITATION_STATION]
+        self._attr_precipitation_station_name = coordinator.data[
+            CONF_REAL_TIME_PRECIPITATION_NAME
+        ]
         self.__set_data(coordinator.data)
 
     def __set_data(self, data: MeteoSwissClientResult) -> None:
         self._displayName = data[CONF_FORECAST_NAME]
         self._forecastData = data["forecast"]
-        self._condition = data["condition"]
+        self._condition_for_all_stations = data["condition"]
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -123,31 +140,47 @@ class MeteoSwissWeather(
 
     @property
     def native_temperature(self) -> float | None:
-        return condition_name_to_value(self._condition, "tre200s0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "tre200s0"
+        )
 
     @property
     def native_pressure(self) -> float | None:
-        return condition_name_to_value(self._condition, "prestas0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "prestas0"
+        )
 
     @property
     def pressure_qff(self) -> float | None:
-        return condition_name_to_value(self._condition, "pp0qffs0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "pp0qffs0"
+        )
 
     @property
     def pressure_qnh(self) -> float | None:
-        return condition_name_to_value(self._condition, "pp0qnhs0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "pp0qnhs0"
+        )
 
     @property
     def humidity(self) -> float | None:
-        return condition_name_to_value(self._condition, "ure200s0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "ure200s0"
+        )
 
     @property
     def native_wind_speed(self) -> float | None:
-        return condition_name_to_value(self._condition, "fu3010z0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "fu3010z0"
+        )
 
     @property
     def wind_bearing(self) -> float | None:
-        return condition_name_to_value(self._condition, "dkl010z0")
+        return condition_name_to_first_value(
+            self._condition_for_all_stations, "dkl010z0"
+        )
+
+    # FIXME add precipitation conditions above.
 
     @property
     def condition(self) -> str | None:
@@ -179,12 +212,21 @@ class MeteoSwissWeather(
     def attribution(self) -> str:
         a = "Data provided by MeteoSwiss."
         a += "  Forecasts from postal code %s." % (self._attr_post_code,)
-        if self._attr_station:
-            a += "  Real-time weather data from weather station %s." % (
-                self._attr_station,
+        if self._attr_weather_station:
+            a += "  Real-time weather data from weather station %s (%s)." % (
+                self._attr_weather_station,
+                self._attr_weather_station_name,
             )
+        if self._attr_precipitation_station:
+            a += "  Real-time weather data from weather station %s (%s)." % (
+                self._attr_precipitation_station,
+                self._attr_precipitation_station_name,
+            )
+        if self._attr_weather_station or self._attr_precipitation_station:
             url = "https://rudd-o.com/meteostations"
             a += "  Stations available at %s ." % (url,)
+        else:
+            a += "  No real-time stations used by this weather entry."
         return a
 
     def _daily_forecast(self) -> list[Forecast] | None:
@@ -202,10 +244,10 @@ class MeteoSwissWeather(
                     )[0],
                     ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitation"],
                 }
-                _LOGGER.debug("Appending daily forecast: %s", data_out)
                 fcdata_out.append(data_out)
             except Exception as e:
                 _LOGGER.error("Error while computing forecast: %s", e)
+        _LOGGER.debug("Daily forecast has %d items", len(fcdata_out))
         return fcdata_out
 
     def _hourly_forecast(self) -> list[Forecast] | None:
@@ -228,8 +270,8 @@ class MeteoSwissWeather(
                 ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
                 ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitationMax"],
             }
-            _LOGGER.debug("Appending hourly forecast: %s", data_out)
             fcdata_out.append(data_out)
+        _LOGGER.debug("Hourly forecast has %d items", len(fcdata_out))
         return fcdata_out
 
     @property

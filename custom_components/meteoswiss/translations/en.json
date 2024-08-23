@@ -50,10 +50,12 @@
             "user_three": {
                 "data": {
                     "station": "Real-time weather station",
-                    "real_time_name": "Real-time entity names"
+                    "real_time_name": "Real-time weather entity names",
+                    "precipitation_station": "Real-time precipitation station",
+                    "real_time_precipitation_name": "Real-time precipitation entity names"
                 },
-                "description": "The real-time weather station is used to look up the current weather at the station and provide them as sensors.  Selecting the first option of the list disables real-time weather sensors.\n\nIf a weather station is selected, the real-time entity names field is used to name the real-time (sensor) entities.  If no station is chosen, the real-time entity names field is ignored.\n\nhttps://rudd-o.com/meteostations lists the available real-time weather stations.",
-                "title": "Real-time weather"
+                "description": "The real-time weather and precipitation stations are used to look up the current weather and precipitation at the station and provide them as sensors.  Selecting the first option of the list disables real-time weather sensors.\n\nIf a weather station is selected, the real-time entity names field is used to name the real-time (sensor) entities.  If no station is chosen, the real-time entity names field is ignored.\n\nhttps://rudd-o.com/meteostations lists the available real-time stations.",
+                "title": "Real-time weather and precipitation stations"
             }
         }
     }

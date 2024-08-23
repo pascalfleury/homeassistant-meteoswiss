@@ -11,6 +11,10 @@ This is the MeteoSwiss integration for Home Assistant.
   (every entity has a unique ID).
 * Detects when your real-time weather station has been retired,
   and offers suggestions on how to fix the issue.
+* Supports hourly forecasts.
+* Supports two different real-time stations: a weather station
+  that may not give you rain data, and a precipitation station
+  that will give you rain data but may not give you other info.
 * Code is much cleaner and works properly.
 
 See below for common issues.
@@ -107,7 +111,9 @@ Now you are ready to add one or more instances of the integration.
   (a good guess is provided) and name your location.  You can select no
   weather station if you so desire — useful if there is no real-time
   weather station near where you live — in which case the real-time sensor
-  data is simply not provided as sensors.
+  data is simply not provided as sensors.  You may also select a real-time
+  precipitation station that is different from your weather station, to get
+  rain information closer to where you are.
 
 ![enter image description here](https://github.com/Rudd-O/homeassistant-meteoswiss/raw/master/docs/weatherstation.png)
 

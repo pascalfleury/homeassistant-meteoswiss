@@ -25,7 +25,9 @@ from custom_components.meteoswiss.const import (
     CONF_FORECAST_NAME,
     CONF_NAME,
     CONF_POSTCODE,
+    CONF_PRECIPITATION_STATION,
     CONF_REAL_TIME_NAME,
+    CONF_REAL_TIME_PRECIPITATION_NAME,
     CONF_STATION,
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
@@ -92,9 +94,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         interval,
         entry.data[CONF_POSTCODE],
-        station=entry.data.get(CONF_STATION, None),
         forecast_name=entry.data.get(CONF_FORECAST_NAME, name),
-        real_time_name=entry.data.get(CONF_REAL_TIME_NAME, None),
+        weather_station=entry.data.get(CONF_STATION, None),
+        real_time_weather_station_name=entry.data.get(CONF_REAL_TIME_NAME, None),
+        precipitation_station=entry.data.get(CONF_PRECIPITATION_STATION, None),
+        real_time_precipitation_station_name=entry.data.get(
+            CONF_REAL_TIME_PRECIPITATION_NAME, None
+        ),
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -145,18 +151,24 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResu
         hass: HomeAssistant,
         update_interval: datetime.timedelta,
         post_code: int,
-        station: str | None,
         forecast_name: str,
-        real_time_name: str | None,
+        weather_station: str | None,
+        real_time_weather_station_name: str | None,
+        precipitation_station: str | None,
+        real_time_precipitation_station_name: str | None,
     ) -> None:
         """Initialize."""
-        self.first_error: float | None = None
-        self.error_raised = False
+        self.first_error: dict[str, float | None] = {
+            CONF_REAL_TIME_NAME: False,
+            CONF_REAL_TIME_PRECIPITATION_NAME: False,
+        }
+        self.error_raised = {
+            CONF_REAL_TIME_NAME: False,
+            CONF_REAL_TIME_PRECIPITATION_NAME: False,
+        }
         self.hass = hass
         self.post_code = post_code
-        self.station = station
         self.forecast_name = forecast_name
-        self.real_time_name = real_time_name
         _LOGGER.debug(
             "Forecast %s will be provided for post code %s every %s",
             forecast_name,
@@ -164,18 +176,36 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResu
             update_interval,
         )
 
-        if station:
+        self.weather_station = weather_station
+        self.real_time_weather_station_name = real_time_weather_station_name
+        if weather_station:
             _LOGGER.debug(
-                "Real-time %s will be updated from %s every %s",
-                real_time_name,
-                station,
+                "Real-time weather %s will be updated from %s every %s",
+                real_time_weather_station_name,
+                weather_station,
+                update_interval,
+            )
+
+        self.precipitation_station = precipitation_station
+        self.real_time_precipitation_station_name = real_time_precipitation_station_name
+        if precipitation_station:
+            _LOGGER.debug(
+                "Real-time precipitation %s will be updated from %s every %s",
+                real_time_precipitation_station_name,
+                precipitation_station,
                 update_interval,
             )
 
         self.client = meteoSwissClient(  # type:ignore[no-untyped-call]
-            "%s / %s" % (forecast_name, real_time_name),
+            "%s / %s / %s"
+            % (
+                forecast_name,
+                real_time_weather_station_name,
+                real_time_precipitation_station_name,
+            ),
             post_code,
-            station if station else "NO STATION",
+            weather_station if weather_station else "NO STATION",
+            precipitation_station if precipitation_station else "NO STATION",
         )
         _LOGGER.debug("Client obtained")
 
@@ -197,46 +227,60 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResu
             _LOGGER.exception("Failed getting data")
             raise UpdateFailed(exc) from exc
 
-        _LOGGER.debug("Data obtained (%s):\n%s", type(data), pprint.pformat(data))
-        if self.station:
-            if not data.get("condition"):
-                # Oh no.  We could not retrieve the URL.
-                # We try 20 times.  If it does not succeed,
-                # we will induce a config error.
-                _LOGGER.warning(
-                    "Station %s provided us with no real-time data",
-                    self.station,
-                )
-                if self.first_error is None:
-                    self.first_error = time.time()
+        # _LOGGER.debug("Data obtained (%s):\n%s", type(data), pprint.pformat(data))
+        for station, name in (
+            (self.weather_station, CONF_REAL_TIME_NAME),
+            (
+                self.precipitation_station,
+                CONF_REAL_TIME_PRECIPITATION_NAME,
+            ),
+        ):
+            if station:
+                if not data["condition_by_station"].get(station):
+                    # Oh no.  We could not retrieve the URL.
+                    # We try 20 times.  If it does not succeed,
+                    # we will induce a config error.
+                    _LOGGER.warning(
+                        "Station %s (%s) provided us with no real-time data",
+                        station,
+                        name,
+                    )
+                    if self.first_error[name] is None:
+                        self.first_error[name] = time.time()
 
-                m = MAX_CONTINUOUS_ERROR_TIME
-                last_error = time.time() - self.first_error
-                if not self.error_raised and last_error > m:
-                    ir.async_create_issue(
-                        self.hass,
-                        DOMAIN,
-                        f"{self.station}_provides_no_data_{DOMAIN}",
-                        is_fixable=False,
-                        is_persistent=False,
-                        severity=IssueSeverity.ERROR,
-                        translation_key="station_no_data",
-                        translation_placeholders={
-                            "station": self.station,
-                        },
-                    )
-                    self.error_raised = True
-            else:
-                if self.error_raised:
-                    ir.async_delete_issue(
-                        self.hass, DOMAIN, f"{self.station}_provides_no_data_{DOMAIN}"
-                    )
-                self.first_error = None
-                self.error_raised = False
+                    m = MAX_CONTINUOUS_ERROR_TIME
+                    last_error = time.time() - self.first_error[name]
+                    if not self.error_raised and last_error > m:
+                        ir.async_create_issue(
+                            self.hass,
+                            DOMAIN,
+                            f"{station}_{name}_provides_no_data_{DOMAIN}",
+                            is_fixable=False,
+                            is_persistent=False,
+                            severity=IssueSeverity.ERROR,
+                            translation_key="station_no_data",
+                            translation_placeholders={
+                                "station": station,
+                            },
+                        )
+                        self.error_raised[name] = True
+                else:
+                    if self.error_raised[name]:
+                        ir.async_delete_issue(
+                            self.hass,
+                            DOMAIN,
+                            f"{station}_{name}_provides_no_data_{DOMAIN}",
+                        )
+                    self.first_error[name] = None
+                    self.error_raised[name] = False
 
         newdata = cast(MeteoSwissClientResult, data)
-        newdata[CONF_STATION] = self.station  # type:ignore[literal-required]
         newdata[CONF_POSTCODE] = self.post_code  # type:ignore[literal-required]
         newdata[CONF_FORECAST_NAME] = self.forecast_name  # type:ignore[literal-required]
-        newdata[CONF_REAL_TIME_NAME] = self.real_time_name  # type:ignore[literal-required]
+        newdata[CONF_STATION] = self.weather_station  # type:ignore[literal-required]
+        newdata[CONF_REAL_TIME_NAME] = self.real_time_weather_station_name  # type:ignore[literal-required]
+        newdata[CONF_PRECIPITATION_STATION] = self.precipitation_station  # type:ignore[literal-required]
+        newdata[CONF_REAL_TIME_PRECIPITATION_NAME] = (
+            self.real_time_precipitation_station_name
+        )  # type:ignore[literal-required]
         return newdata
