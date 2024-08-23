@@ -4,7 +4,7 @@ import datetime
 import logging
 import pprint
 import time
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 from async_timeout import timeout
 from hamsclientfork import meteoSwissClient
@@ -194,6 +194,7 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResu
                     self.client.get_typed_data,
                 )
         except Exception as exc:
+            _LOGGER.exception("Failed getting data")
             raise UpdateFailed(exc) from exc
 
         _LOGGER.debug("Data obtained (%s):\n%s", type(data), pprint.pformat(data))

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import datetime
 import logging
 from typing import Any, cast
 
-from hamsclientfork.client import CurrentCondition, DayForecast
+from hamsclientfork.client import CurrentCondition, DayForecast, HourlyForecast
 from homeassistant.components.weather import (
     ATTR_FORECAST_CONDITION,
     ATTR_FORECAST_NATIVE_PRECIPITATION,
@@ -90,7 +91,9 @@ class MeteoSwissWeather(
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_native_pressure_unit = UnitOfPressure.HPA
     _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
-    _attr_supported_features = WeatherEntityFeature.FORECAST_DAILY
+    _attr_supported_features = (
+        WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
+    )
 
     def __init__(
         self,
@@ -188,7 +191,7 @@ class MeteoSwissWeather(
             a += "  Stations available at %s ." % (url,)
         return a
 
-    def _forecast(self) -> list[Forecast] | None:
+    def _daily_forecast(self) -> list[Forecast] | None:
         fcdata_out = []
         # Skip the first element - it's the forecast for the current day
         for untyped_forecast in self._forecastData["regionForecast"]:
@@ -201,22 +204,46 @@ class MeteoSwissWeather(
                     ATTR_FORECAST_CONDITION: CONDITION_MAP.get(forecast["iconDay"]),
                     ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitation"],
                 }
-                _LOGGER.debug("Appending forecast: %s", data_out)
+                _LOGGER.debug("Appending daily forecast: %s", data_out)
                 fcdata_out.append(data_out)
             except Exception as e:
                 _LOGGER.error("Error while computing forecast: %s", e)
         return fcdata_out
 
-    @property
-    def forecast(self) -> list[Forecast]:
-        """Return the forecast array."""
-        return self._forecast() or []
+    def _hourly_forecast(self) -> list[Forecast] | None:
+        fcdata_out = []
+        # Skip the first element - it's the forecast for the current day
+        now = datetime.datetime.now(datetime.timezone.utc)
+        forecast_data = cast(
+            list[HourlyForecast], self._forecastData["regionHourlyForecast"]
+        )
+        biggers = [f["time"] > now for f in forecast_data]
+        try:
+            idx = biggers.index(True)
+        except IndexError:
+            return fcdata_out
+        for untyped_forecast in forecast_data[idx - 1 :]:
+            forecast = cast(HourlyForecast, untyped_forecast)
+            data_out: Forecast = {
+                ATTR_FORECAST_TIME: forecast["time"].isoformat("T").partition("+")[0]
+                + "Z",
+                ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
+                ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
+                ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitationMax"],
+            }
+            _LOGGER.debug("Appending hourly forecast: %s", data_out)
+            fcdata_out.append(data_out)
+        return fcdata_out
 
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return bool(self._forecast())
+        return bool(self._daily_forecast())
 
     async def async_forecast_daily(self) -> list[Forecast]:
         """Return the daily forecast in native units."""
-        return self._forecast() or []
+        return self._daily_forecast() or []
+
+    async def async_forecast_hourly(self) -> list[Forecast]:
+        """Return the hourly forecast in native units."""
+        return self._hourly_forecast() or []
