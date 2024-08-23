@@ -36,7 +36,7 @@ USER_AGENT = "MeteoSwiss Home Assistant integration"
 
 
 class Condition(StrEnum):
-    partly_cloudy = "default"
+    partly_cloudy = "partlycloudy"
     clear_night = "clear-night"
     cloudy = "cloudy"
     exceptional = "exceptional"
