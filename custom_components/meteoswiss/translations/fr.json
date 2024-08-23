@@ -1,16 +1,16 @@
 {
     "issues": {
         "deprecated_yaml": {
-            "title": "La configuration YAML de Meteo Suisse est en train de être supprimée",
-            "description": "La configuration YAML de Meteo Suisse est en train d'être supprimée.\\n\\nL'importation automatique de votre configuration YAML a été effectuée avec succès dans l'interface utilisateur.\\n\\nSupprimez la configuration Swiss Meteo de votre fichier configuration.yaml et redémarrez Home Assistant pour résoudre ce problème."
+            "title": "La configuration YAML de MétéoSuisse est en train de être supprimée",
+            "description": "La configuration YAML de MétéoSuisse est en train d'être supprimée.\\n\\nL'importation automatique de votre configuration YAML a été effectuée avec succès dans l'interface utilisateur.\\n\\nSupprimez la configuration MétéoSuisse de votre fichier configuration.yaml et redémarrez Home Assistant pour résoudre ce problème."
         },
         "station_no_data": {
-            "title": "La station météo de Meteo Suisse semble avoir disparu",
-            "description": "La station météo en temps réel de Meteo Swiss, qui utilise ({station}), n'offre plus de données.\\n\\nActuellement, la seule possibilité de réparation consiste à supprimer et à re-ajouter l'intégration Meteo Swiss, tout en sélectionnant une nouvelle station météo en temps réel.\\n\\nJusqu'à ce que cette réparation soit effectuée, tous les capteurs météo et les rapports provenant de cette station afficheront comme indisponibles."
+            "title": "La station météo de MétéoSuisse semble avoir disparu",
+            "description": "La station météo en temps réel de MétéoSuisse, qui utilise ({station}), n'offre plus de données.\\n\\nActuellement, la seule possibilité de réparation consiste à supprimer et à re-ajouter l'intégration MétéoSuisse, tout en sélectionnant une nouvelle station météo en temps réel.\\n\\nJusqu'à ce que cette réparation soit effectuée, tous les capteurs météo et les rapports provenant de cette station afficheront comme indisponibles."
         },
         "improperly_configured": {
-            "title": "L'intégration de Meteo Suisse est mal configurée",
-            "description": "L'intégration de Meteo Swiss avec l'ID d'entrée {entry_id} n'est pas correctement configurée.\\n\\nVeuillez supprimer votre entrée de configuration et la recréer."
+            "title": "L'intégration de MétéoSuisse est mal configurée",
+            "description": "L'intégration de MétéoSuisse avec l'ID d'entrée {entry_id} n'est pas correctement configurée.\\n\\nVeuillez supprimer votre entrée de configuration et la recréer."
         }
     },
     "config": {
