@@ -19,13 +19,15 @@
             "unknown": "Erreur inconnue : veuillez réessayer plus tard"
         },
         "error": {
-            "lat": "La latitude fournie n'est pas comprise entre -90 et 90 degrés.",
-            "lon": "La latitude fournie n'est pas comprise entre -180 et 180 degrés.",
-            "invalid_station_name": "Nom de la station invalide; merci de vérifier sur: https://rudd-o.com/meteostations",
-            "invalid_postcode": "Code postale incorrecte; cette intégration ne fonctionne que pour de codes postaux suisse",
-            "forecast_name_empty": "Le nom de la prévision ne peut être vide",
-            "empty_name": "Le nom d'affichage est vide",
-            "update_interval_too_low": "L'intervalle de mise à jour est trop court. Il doit être d'au moins 1 minute."
+            "cannot_query_address": "OpenStreetMap a refusé de deviner l'adresse pour votre emplacement; veuillez entrer les informations manuellement",
+            "cannot_query_postcode": "OpenStreetMap a refusé de deviner le code postal pour votre emplacement; veuillez entrer les informations manuellement",
+            "lat": "La latitude fournie ne tombe pas entre -90 et 90 degrés",
+            "lon": "La longitude fournie ne tombe pas entre -180 et 180 degrés",
+            "invalid_station_name": "Le nom de la station est invalide; veuillez consulter https://rudd-o.com/meteostations pour la liste des stations",
+            "invalid_postcode": "Le code postal est invalide. Cette intégration ne fonctionne que avec les codes postaux suisses",
+            "forecast_name_empty": "Le nom de prévision ne peut pas être vide",
+            "empty_name": "Le nom à afficher est vide",
+            "update_interval_too_low": "L'intervalle d'actualisation est trop bas.  Doit être minimum 1 minute"
         },
         "step": {
             "user": {

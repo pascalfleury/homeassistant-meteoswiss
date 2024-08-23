@@ -1,4 +1,5 @@
 """Config flow to configure the Meteo-Swiss integration."""
+
 import logging
 import re
 from typing import Any
@@ -20,6 +21,7 @@ from custom_components.meteoswiss.const import (
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
+    USER_AGENT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +31,6 @@ NO_STATION = "No real-time weather station"
 
 
 class MeteoSwissFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):  # type:ignore
-
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
@@ -43,7 +44,10 @@ class MeteoSwissFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):  # type:i
         self._update_interval = None
 
     async def async_step_user(self, user_input=None):
-        """Handle a flow initiated by the user."""
+        """Handle a flow initiated by the user.
+
+        In this step, we collect the latitude and longitude.
+        """
 
         _LOGGER.debug(
             "step user: starting with lat %s lon %s post %s",
@@ -95,7 +99,11 @@ class MeteoSwissFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):  # type:i
         return await self.async_step_user_two()
 
     async def async_step_user_two(self, user_input=None):
-        """Handle the second step of setup."""
+        """Handle the second step of setup.
+
+        In this step we collect the postal code, the name of the forecast,
+        and the update interval.
+        """
 
         _LOGGER.debug(
             "step user two: starting with lat %s lon %s post %s",
@@ -144,21 +152,33 @@ class MeteoSwissFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):  # type:i
                 user_input[CONF_UPDATE_INTERVAL],
             )
         else:
-            geodata = await self.hass.async_add_executor_job(
-                client.getGeoData, self._lat, self._lon
-            )
-            guessed_postal_code = str(
-                geodata.get("address", {}).get(
-                    "postcode",
-                    "",
+            try:
+                geodata = await self.hass.async_add_executor_job(
+                    client.getGeoData,
+                    self._lat,
+                    self._lon,
+                    USER_AGENT,
                 )
-            )
-            guessed_address = " ".join(
-                x.strip()
-                for x in str(geodata.get("display_name", "",)).split(
-                    ","
-                )[:3]
-            )
+                guessed_postal_code = str(
+                    geodata.get("address", {}).get(
+                        "postcode",
+                        "",
+                    )
+                )
+                guessed_address = " ".join(
+                    x.strip()
+                    for x in str(
+                        geodata.get(
+                            "display_name",
+                            "",
+                        )
+                    ).split(",")[:3]
+                )
+            except Exception:
+                errors[CONF_POSTCODE] = "cannot_query_postcode"
+                errors[CONF_FORECAST_NAME] = "cannot_query_address"
+                guessed_postal_code = ""
+                guessed_address = ""
 
             schema = data_schema(
                 guessed_postal_code,

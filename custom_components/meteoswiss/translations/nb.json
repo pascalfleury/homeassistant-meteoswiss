@@ -19,13 +19,15 @@
             "unknown": "Ukjent feil: prøv på nytt senere"
         },
         "error": {
-            "lat": "The supplied latitude does not fall between -90 y 90 degrees",
-            "lon": "The supplied latitude does not fall between -180 y 180 degrees",
+            "cannot_query_address": "OpenStreetMap ne ønsket å gueß adresse for din lokasjon; skriv inn informasjonen selv",
+            "cannot_query_postcode": "OpenStreetMap ne ønsket å gueß postnummer for din lokasjon; skriv inn informasjonen selv",
+            "lat": "Høyden er utenfor grensene -90 til 90 grader",
+            "lon": "Breddelsen er utenfor grensene -180 til 180 grader",
             "invalid_station_name": "Stasjonsnavnet er ugyldig; vennligst sjekk https://rudd-o.com/meteostations for stasjonsliste",
-            "invalid_postcode": "Postnummer er ugyldig. Denne integrasjonen fungerer bare med Sveits postnummer",
-            "forecast_name_empty": "Forecast name cannot be empty",
-            "empty_name": "The display name is empty",
-            "update_interval_too_low": "The update interval is too low.  Must be minimum 1 minute."
+            "invalid_postcode": "Postnummeret er ugyldig. Denne integrasjonen fungerer bare med Sveits' postnummer",
+            "forecast_name_empty": "Været navn kan ikke være tomt",
+            "empty_name": "Visningsnavnet er tomt",
+            "update_interval_too_low": "Oppdateringsintervall er for lavt.  Må være minimum 1 minut"
         },
         "step": {
             "user": {
