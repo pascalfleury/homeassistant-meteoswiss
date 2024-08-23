@@ -1,16 +1,16 @@
 {
     "issues": {
         "deprecated_yaml": {
-            "title": "La configurazione YAML di Meteo Svizzero viene rimossa",
-            "description": "La configurazione di Meteo Svizzero utilizzando YAML viene rimossa.\\n\\nLa tua configurazione YAML esistente è stata importata automaticamente nel pannello di controllo.\\n\\nRimuovi la configurazione svizzera di Meteo dal tuo file configuration.yaml e riavvia Home Assistant per risolvere questo problema."
+            "title": "La configurazione YAML di MeteoSvizzera viene rimossa",
+            "description": "La configurazione di MeteoSvizzera utilizzando YAML viene rimossa.\\n\\nLa tua configurazione YAML esistente è stata importata automaticamente nel pannello di controllo.\\n\\nRimuovi la configurazione svizzera di Meteo dal tuo file configuration.yaml e riavvia Home Assistant per risolvere questo problema."
         },
         "station_no_data": {
-            "title": "La stazione meteorologica di Meteo Svizzero sembra essere andata perduta",
-            "description": "La stazione meteorologica di Meteo Svizzero utilizzando ({station}) non offre più dati.\\n\\nAttualmente, l'unico riparazione possibile prevede la rimozione e la riacquisizione dell'integrazione di Meteo Svizzero, selezionando una nuova stazione meteorologica in tempo reale.\\n\\nFino a che questa riparazione non sia effettuata, tutti i sensori e le relazioni meteorologici in tempo reale provenienti da questa stazione mostreranno come indisponibili."
+            "title": "La stazione meteorologica di MeteoSvizzera sembra essere andata perduta",
+            "description": "La stazione meteorologica di MeteoSvizzera utilizzando ({station}) non offre più dati.\\n\\nAttualmente, l'unico riparazione possibile prevede la rimozione e la riacquisizione dell'integrazione di MeteoSvizzera, selezionando una nuova stazione meteorologica in tempo reale.\\n\\nFino a che questa riparazione non sia effettuata, tutti i sensori e le relazioni meteorologici in tempo reale provenienti da questa stazione mostreranno come indisponibili."
         },
         "improperly_configured": {
-            "title": "L'integrazione di Meteo Svizzero non è configurata correttamente",
-            "description": "L'integrazione di Meteo Svizzero con ID di inserimento {entry_id} non è configurata correttamente.\\n\\nPer favore, rimuovi il tuo entry di configurazione e ricrearlo."
+            "title": "L'integrazione di MeteoSvizzera non è configurata correttamente",
+            "description": "L'integrazione di MeteoSvizzera con ID di inserimento {entry_id} non è configurata correttamente.\\n\\nPer favore, rimuovi il tuo entry di configurazione e ricrearlo."
         }
     },
     "config": {
