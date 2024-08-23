@@ -118,6 +118,39 @@ Now you are ready to add one or more instances of the integration.
 If you are not happy with the settings, in a future release you
 will be able to update them.
 
+## How to create a sensor that has the weather forecast data
+
+Here is a sample of a YAML-based trigger-powered template sensor that creates
+three different sensors from a service call every fifteen minutes.
+
+```yaml
+# ...
+template:
+# ...
+  - trigger:
+      - platform: time_pattern
+        minutes: /15
+    action:
+      - service: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id: weather.meteoswiss
+        response_variable: response_forecast_daily
+    sensor:
+      - name: Tomorrow Max Temp
+        unique_id: d1b441ec-e9c6-43f8-a50a-c7c5c42c0ef5
+        state: "{{ response_forecast_daily['weather.meteoswiss'].forecast[1].temperature }}"
+
+      - name: Tomorrow Min Temp
+        unique_id: b88a351c-8eb7-40ae-8a9e-dcfeaa224551
+        state: "{{ response_forecast_daily['weather.meteoswiss'].forecast[1].templow }}"
+
+      - name: Tomorrow Mean Temp
+        unique_id: 6344f875-4569-4c3f-ad8d-ad6bccc5bc61
+        state: "{{ ((response_forecast_daily['weather.meteoswiss'].forecast[1].temperature) + (response_forecast_daily['weather.meteoswiss'].forecast[1].templow)) /2}}"
+```
+
 ## Troubleshooting
   
 In case of problem with the integration, please open an issue on
