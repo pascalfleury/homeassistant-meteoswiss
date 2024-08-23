@@ -33,8 +33,7 @@ from custom_components.meteoswiss import (
     MeteoSwissDataUpdateCoordinator,
 )
 from custom_components.meteoswiss.const import (
-    CONDITION_CLASSES,
-    CONDITION_MAP,
+    CODE_TO_CONDITION_MAP,
     CONF_FORECAST_NAME,
     CONF_POSTCODE,
     CONF_STATION,
@@ -154,10 +153,7 @@ class MeteoSwissWeather(
     def condition(self) -> str | None:
         symbolId = self._forecastData["currentWeather"]["icon"]
         try:
-            cond: str | None = next(
-                (k for k, v in CONDITION_CLASSES.items() if int(symbolId) in v),
-                None,
-            )
+            cond: str | None = CODE_TO_CONDITION_MAP.get(symbolId, (None, None))[0]
             if cond is None:
                 _LOGGER.error(
                     "Expected a known int for the forecast icon, not None",
@@ -201,7 +197,9 @@ class MeteoSwissWeather(
                     ATTR_FORECAST_TIME: forecast["dayDate"],
                     ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
                     ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
-                    ATTR_FORECAST_CONDITION: CONDITION_MAP.get(forecast["iconDay"]),
+                    ATTR_FORECAST_CONDITION: CODE_TO_CONDITION_MAP.get(
+                        forecast["iconDay"], (None, None)
+                    )[0],
                     ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitation"],
                 }
                 _LOGGER.debug("Appending daily forecast: %s", data_out)
@@ -211,7 +209,7 @@ class MeteoSwissWeather(
         return fcdata_out
 
     def _hourly_forecast(self) -> list[Forecast] | None:
-        fcdata_out = []
+        fcdata_out: list[Forecast] = []
         # Skip the first element - it's the forecast for the current day
         now = datetime.datetime.now(datetime.timezone.utc)
         forecast_data = cast(
@@ -222,8 +220,7 @@ class MeteoSwissWeather(
             idx = biggers.index(True)
         except IndexError:
             return fcdata_out
-        for untyped_forecast in forecast_data[idx - 1 :]:
-            forecast = cast(HourlyForecast, untyped_forecast)
+        for forecast in forecast_data[idx - 1 :]:
             data_out: Forecast = {
                 ATTR_FORECAST_TIME: forecast["time"].isoformat("T").partition("+")[0]
                 + "Z",

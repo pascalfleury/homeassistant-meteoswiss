@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import Enum, StrEnum
 from typing import Final
 
 from homeassistant.const import (
@@ -30,31 +31,117 @@ DEFAULT_UPDATE_INTERVAL = 5
 
 USER_AGENT = "MeteoSwiss Home Assistant integration"
 
+
+class Condition(StrEnum):
+    partly_cloudy = "default"
+    clear_night = "clear-night"
+    cloudy = "cloudy"
+    exceptional = "exceptional"
+    fog = "fog"
+    hail = "hail"
+    lightning = "lightning"
+    lightning_rainy = "lightning-rainy"
+    pouring = "pouring"
+    rainy = "rainy"
+    snowy = "snowy"
+    snowy_rainy = "snowy-rainy"
+    sunny = "sunny"
+    windy = "windy"
+    windy_variant = "windy-variant"
+
+
 # Mapping for conditions vs icon ID of meteoswiss
 # ID < 100 for day icons
 # ID > 100 for night icons
 # MeteoSwiss has more lvl for cloudy an rainy than home assistant
-CONDITION_CLASSES: Final[dict[str, list[int]]] = {
-    "clear-night": [101],
-    "cloudy": [5, 35, 105, 135],
-    "fog": [27, 28, 127, 128],
-    "hail": [],
-    "lightning": [12, 112],
-    "lightning-rainy": [13, 23, 24, 25, 32, 113, 123, 124, 125, 132],
-    "partlycloudy": [2, 3, 4, 102, 103, 104],
-    "pouring": [20, 120],
-    "rainy": [6, 9, 14, 17, 29, 33, 106, 109, 114, 117, 129, 133],
-    "snowy": [8, 11, 16, 19, 22, 30, 34, 108, 111, 116, 119, 122, 130, 134],
-    "snowy-rainy": [7, 10, 15, 18, 21, 31, 107, 110, 115, 118, 121, 131],
-    "sunny": [1, 26, 126],
-    "windy": [],
-    "windy-variant": [],
-    "exceptional": [],
-}
-CONDITION_MAP = {
-    cond_code: cond_ha
-    for cond_ha, cond_codes in CONDITION_CLASSES.items()
-    for cond_code in cond_codes
+# https://www.meteoswiss.admin.ch/dam/jcr:bfcea855-ab6b-4602-9d8b-0464afa30e66/2022-02-14-Wetter-Icons-inkl-beschreibung-v1-an-website.xlsx
+# Dump from the spreadsheet linked above on August 23 2024.
+# Massaged to convert to Python enum.
+CODE_TO_CONDITION_MAP = {
+    1: (Condition.sunny, "sunny"),
+    2: (Condition.partly_cloudy, "mostly sunny, some clouds"),
+    3: (Condition.partly_cloudy, "partly sunny, thick passing clouds"),
+    4: (Condition.partly_cloudy, "overcast"),
+    5: (Condition.cloudy, "very cloudy"),
+    6: (Condition.rainy, "sunny intervals,  isolated showers"),
+    7: (Condition.snowy_rainy, "sunny intervals, isolated sleet"),
+    8: (Condition.snowy, "sunny intervals, snow showers"),
+    9: (Condition.rainy, "overcast, some rain showers"),
+    10: (Condition.snowy_rainy, "overcast, some sleet"),
+    11: (Condition.snowy, "overcast, some snow showers"),
+    12: (Condition.lightning, "sunny intervals, chance of thunderstorms"),
+    13: (Condition.lightning_rainy, "sunny intervals, possible thunderstorms"),
+    14: (Condition.rainy, "very cloudy, light rain"),
+    15: (Condition.snowy_rainy, "very cloudy, light sleet"),
+    16: (Condition.snowy, "very cloudy, light snow showers"),
+    17: (Condition.rainy, "very cloudy, intermittent rain"),
+    18: (Condition.snowy_rainy, "very cloudy, intermittent sleet"),
+    19: (Condition.snowy, "very cloudy, intermittent snow"),
+    20: (Condition.pouring, "very overcast with rain"),
+    21: (Condition.snowy_rainy, "very overcast with frequent sleet"),
+    22: (Condition.snowy, "very overcast with heavy snow"),
+    23: (Condition.lightning_rainy, "very overcast, slight chance of storms"),
+    24: (Condition.lightning_rainy, "very overcast with storms"),
+    25: (Condition.lightning_rainy, "very cloudy, very stormy"),
+    26: (Condition.sunny, "high clouds"),
+    27: (Condition.fog, "stratus"),
+    28: (Condition.fog, "fog"),
+    29: (Condition.rainy, "sunny intervals, scattered showers"),
+    30: (Condition.snowy, "sunny intervals, scattered snow showers"),
+    31: (Condition.snowy_rainy, "sunny intervals, scattered sleet"),
+    32: (Condition.lightning_rainy, "sunny intervals, some showers"),
+    33: (Condition.rainy, "short sunny intervals, frequent rain"),
+    34: (Condition.snowy, "short sunny intervals, frequent snowfalls"),
+    35: (Condition.cloudy, "overcast and dry"),
+    36: (Condition.lightning, "partly sunny, slightly stormy"),
+    37: (Condition.snowy, "partly sunny, stormy snow showers"),
+    38: (Condition.lightning_rainy, "overcast, thundery showers"),
+    39: (Condition.snowy_rainy, "overcast, thundery snow showers"),
+    40: (Condition.lightning, "very cloudly, slightly stormy"),
+    41: (Condition.lightning, "overcast, slightly stormy"),
+    42: (Condition.snowy, "very cloudly, thundery snow showers"),
+    101: (Condition.clear_night, "clear"),
+    102: (Condition.partly_cloudy, "slightly overcast"),
+    103: (Condition.partly_cloudy, "heavy cloud formations"),
+    104: (Condition.partly_cloudy, "overcast"),
+    105: (Condition.cloudy, "very cloudy"),
+    106: (Condition.rainy, "overcast, scattered showers"),
+    107: (Condition.snowy_rainy, "overcast, scattered rain and snow showers"),
+    108: (Condition.snowy, "overcast, snow showers"),
+    109: (Condition.rainy, "overcast, some showers"),
+    110: (Condition.snowy_rainy, "overcast, some rain and snow showers"),
+    111: (Condition.snowy, "overcast, some snow showers"),
+    112: (Condition.lightning, "slightly stormy"),
+    113: (Condition.lightning_rainy, "storms"),
+    114: (Condition.rainy, "very cloudy, light rain"),
+    115: (Condition.snowy_rainy, "very cloudy, light rain and snow  showers"),
+    116: (Condition.snowy, "very cloudy, light snowfall"),
+    117: (Condition.rainy, "very cloudy, intermittent rain"),
+    118: (Condition.snowy_rainy, "very cloudy, intermittant mixed rain and snowfall"),
+    119: (Condition.snowy, "very cloudy, intermittent snowfall"),
+    120: (Condition.pouring, "very cloudy,  constant rain"),
+    121: (Condition.snowy_rainy, "very cloudy, frequent rain and snowfall"),
+    122: (Condition.snowy, "very cloudy, heavy snowfall"),
+    123: (Condition.lightning_rainy, "very cloudy, slightly stormy"),
+    124: (Condition.lightning_rainy, "very cloudy, stormy"),
+    125: (Condition.lightning_rainy, "very cloudy, storms"),
+    126: (Condition.cloudy, "high cloud"),
+    127: (Condition.fog, "stratus"),
+    128: (Condition.fog, "fog"),
+    129: (Condition.rainy, "slightly overcast, scattered showers"),
+    130: (Condition.snowy, "slightly overcast, scattered snowfall"),
+    131: (Condition.snowy_rainy, "slightly overcast, rain and snow showers"),
+    132: (Condition.lightning_rainy, "slightly overcast, some showers"),
+    133: (Condition.rainy, "overcast, frequent snow showers"),
+    134: (Condition.snowy, "overcast, frequent snow showers"),
+    135: (Condition.cloudy, "overcast and dry"),
+    136: (Condition.lightning, "slightly overcast, slightly stormy"),
+    137: (Condition.snowy, "slightly overcast, stormy snow showers"),
+    138: (Condition.lightning_rainy, "overcast, thundery showers"),
+    139: (Condition.snowy_rainy, "overcast, thundery snow showers"),
+    140: (Condition.lightning, "very cloudly, slightly stormy"),
+    141: (Condition.lightning, "overcast, slightly stormy"),
+    142: (Condition.snowy, "very cloudly, thundery snow showers"),
 }
 
 SENSOR_TYPE_NAME = "name"
