@@ -7,7 +7,6 @@
         "${workspaceFolder}/../hamsclientfork"
     ],
     "python.formatting.provider": "black",
-    "python.linting.mypyEnabled": true,
     "[python]": {
         "editor.codeActionsOnSave": [
             "source.organizeImports"
