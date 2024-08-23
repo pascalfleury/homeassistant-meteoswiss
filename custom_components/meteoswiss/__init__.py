@@ -1,4 +1,5 @@
 """Lifecycle of Swiss Meteo."""
+
 import datetime
 import logging
 import pprint
@@ -11,9 +12,9 @@ from hamsclientfork.client import ClientResult
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import Config, HomeAssistant
+from homeassistant.core import HomeAssistant as HomeAssistantType
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.issue_registry import IssueSeverity
-from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
