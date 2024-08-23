@@ -1,16 +1,16 @@
 {
     "issues": {
         "deprecated_yaml": {
-            "title": "Konfigurasjonen for Meteo Sveits i YAML-format blir fjernet",
-            "description": "Konfigurering av Meteo Sveits ved hjelp av YAML blir fjernet.\n\nDin eksisterende YAML-konfigurasjon er blitt importert inn i brukergrensesnittet automatisk.\n\nFjern Swiss Meteo-konfigurasjonen fra din configuration.yaml-fil og restart Home Assistant for å løse dette problemet."
+            "title": "Konfigurasjonen for MeteoSveits i YAML-format blir fjernet",
+            "description": "Konfigurering av MeteoSveits ved hjelp av YAML blir fjernet.\n\nDin eksisterende YAML-konfigurasjon er blitt importert inn i brukergrensesnittet automatisk.\n\nFjern MeteoSveits-konfigurasjonen fra din configuration.yaml-fil og restart Home Assistant for å løse dette problemet."
         },
         "station_no_data": {
-            "title": "Værstatonen for Meteo Sveits ser ut til å være gått",
-            "description": "Den sanntids værstasjonen Meteo Sveits bruker ({station}) skiller ikke lenger ut data.\n\nFor tiden er det bare mulig å løse dette ved å fjerne og gjeninnføre Meteo Sveits-integreringen, velge en ny sanntids værstasjon.\n\nIndtil dette løses, vil alle sanntids- og sensorenheter og rapporter som kommer fra denne stasjonen vises som uoppløselige."
+            "title": "Værstatonen for MeteoSveits ser ut til å være gått",
+            "description": "Den sanntids værstasjonen MeteoSveits bruker ({station}) skiller ikke lenger ut data.\n\nFor tiden er det bare mulig å løse dette ved å fjerne og gjeninnføre MeteoSveits-integreringen, velge en ny sanntids værstasjon.\n\nIndtil dette løses, vil alle sanntids- og sensorenheter og rapporter som kommer fra denne stasjonen vises som uoppløselige."
         },
         "improperly_configured": {
-            "title": "Integrasjonsfellet for Meteo Sveits er ikke konfigurert korrekt",
-            "description": "Meteo Sveits-integreringen med entry ID {entry_id} er ikke konfigurert korrekt.\n\nVennligst fjern din konfigurasjon og skap den på nytt."
+            "title": "Integrasjonsfellet for MeteoSveits er ikke konfigurert korrekt",
+            "description": "MeteoSveits-integreringen med entry ID {entry_id} er ikke konfigurert korrekt.\n\nVennligst fjern din konfigurasjon og skap den på nytt."
         }
     },
     "config": {

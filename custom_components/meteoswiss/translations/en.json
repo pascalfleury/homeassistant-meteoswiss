@@ -2,7 +2,7 @@
     "issues": {
         "deprecated_yaml": {
             "title": "The MeteoSwiss YAML configuration is being removed",
-            "description": "Configuring MeteoSwiss using YAML is being removed.\n\nYour existing YAML configuration has been imported into the UI automatically.\n\nRemove the Swiss Meteo configuration from your configuration.yaml file and restart Home Assistant to fix this issue."
+            "description": "Configuring MeteoSwiss using YAML is being removed.\n\nYour existing YAML configuration has been imported into the UI automatically.\n\nRemove the MeteoSwiss configuration from your configuration.yaml file and restart Home Assistant to fix this issue."
         },
         "station_no_data": {
             "title": "MeteoSwiss weather station appears to be gone",

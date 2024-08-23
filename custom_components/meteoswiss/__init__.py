@@ -1,4 +1,4 @@
-"""Lifecycle of Swiss Meteo."""
+"""Lifecycle of MeteoSwiss."""
 
 import datetime
 import logging

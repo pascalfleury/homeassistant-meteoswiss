@@ -1,13 +1,6 @@
 # homeassistant-meteoswiss (forked)
 
-This is the Meteo Swiss integration for Home Assistant.
-
-**Note: due to changes in how HACS loads custom components
-(reflected in hassfest validation tests), we have had to
-change how this repository is installed.  Unfortunately,
-this caused problems with how an interim version of the
-integratoin itself is loaded.  See installation instructions
-below to get your setup fixed up.  We regret this mess.**
+This is the MeteoSwiss integration for Home Assistant.
 
 ## Features
 
@@ -18,8 +11,6 @@ below to get your setup fixed up.  We regret this mess.**
   (every entity has a unique ID).
 * Detects when your real-time weather station has been retired,
   and offers suggestions on how to fix the issue.
-* Imports the old Meteo Swiss YAML configuration and alerts
-  you to the needed removal of the deprecated YAML.
 * Code is much cleaner and works properly.
 
 See below for common issues.
@@ -98,7 +89,7 @@ Now you are ready to add one or more instances of the integration.
 
 ![enter image description here](https://github.com/Rudd-O/homeassistant-meteoswiss/raw/master/docs/add.png)
   
-- Search for *Meteo Swiss* and then proceed:
+- Search for *MeteoSwiss* and then proceed:
 
 ![enter image description here](https://github.com/Rudd-O/homeassistant-meteoswiss/raw/master/docs/search.png)
 
@@ -176,8 +167,8 @@ logger:
 
 ## Information sources
 
-Data comes from the Meteo Swiss official data sources.
-Forecasts are extracted from the Meteo Swiss API.
+Data comes from the MeteoSwiss official data sources.
+Forecasts are extracted from the MeteoSwiss API.
 Current conditions are from official data files.
 
 A primer on Swiss weather stations can be found at https://rudd-o.com/meteostations .
@@ -202,7 +193,7 @@ then reinstalling the integration through this repository.
 
 ### How to migrate away from websylv's integration
 
-1. First remove any successfully-setup Meteo Swiss integrations.
+1. First remove any successfully-setup "Meteo Swiss" (note the space) integrations.
 2. Remove the integration itself from HACS.
 3. Remove the YAML config you might have been using before.
 3. Add this repository as a custom integration repo in HACS, then install it to your Home Assistant.  See above for installation instructions.

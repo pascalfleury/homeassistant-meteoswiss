@@ -2,7 +2,7 @@
     "issues": {
         "deprecated_yaml": {
             "title": "La configuración MeteoSwiss mediante YAML configuration está obsoleta",
-            "description": "Configurar MeteoSwiss mediante YAML será removida a futuro.\n\nSu configuración existente ha sido importada automáticamente a su interfaz de usuario.\n\nRemueva la sección de configuración de Swiss Meteo configuration de su archivo configuration.yaml file y reinicie Home Assistant para solucionar esta advertencia."
+            "description": "Configurar MeteoSwiss mediante YAML será removida a futuro.\n\nSu configuración existente ha sido importada automáticamente a su interfaz de usuario.\n\nRemueva la sección de configuración de MeteoSwiss configuration de su archivo configuration.yaml file y reinicie Home Assistant para solucionar esta advertencia."
         },
         "station_no_data": {
             "title": "Una estación meteorológica de tiempo real parece estar ausente",

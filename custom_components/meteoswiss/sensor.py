@@ -1,11 +1,7 @@
 import logging
 import pprint
 
-
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorStateClass
-)
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant, callback
@@ -54,7 +50,7 @@ class MeteoSwissSensor(
     CoordinatorEntity[MeteoSwissDataUpdateCoordinator],
     SensorEntity,
 ):
-    """Represents a sensor from Meteo Swiss."""
+    """Represents a sensor from MeteoSwiss."""
 
     def __init__(
         self,

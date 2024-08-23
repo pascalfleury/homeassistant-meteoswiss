@@ -1,4 +1,4 @@
-"""Constants for Meteo Swiss."""
+"""Constants for MeteoSwiss."""
 
 from __future__ import annotations
 
@@ -28,12 +28,12 @@ CONF_LON = "longitude"
 
 DEFAULT_UPDATE_INTERVAL = 5
 
-USER_AGENT = "Meteo Swiss Home Assistant integration"
+USER_AGENT = "MeteoSwiss Home Assistant integration"
 
 # Mapping for conditions vs icon ID of meteoswiss
 # ID < 100 for day icons
 # ID > 100 for night icons
-# Meteo swiss has more lvl for cloudy an rainy than home assistant
+# MeteoSwiss has more lvl for cloudy an rainy than home assistant
 CONDITION_CLASSES: Final[dict[str, list[int]]] = {
     "clear-night": [101],
     "cloudy": [5, 35, 105, 135],
