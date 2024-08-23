@@ -49,8 +49,10 @@
             },
             "user_three": {
                 "data": {
-                    "station": "Aktuelle Wetterstation",
-                    "real_time_name": "Real-time entity names"
+                    "station": "Echtzeit-Wetterstation",
+                    "real_time_name": "Name des Wetterstations",
+                    "precipitation_station": "Echtzeit-Niederschlagswetterstation",
+                    "real_time_precipitation_name": "Name des Niederschlagswetterstations"
                 },
                 "description": "Die aktuelle Wetterstation wird verwendet, um die aktuellen Wetterdaten am Standort zu finden und als Sensoren bereitzustellen. Wenn Sie das erste Option der Liste auswählen, deaktiveren Sie die Akuten Wetter-Sensoren.\\n\\nWenn eine Wetterstation ausgewählt wird, wird das Feld Real-time entity names verwendet, um den aktuellen Wetterdaten Namen zu benennen. Wenn keine Station gewählt ist, wird das Feld Real-time entity names ignoriert.\\n\\nhttps://rudd-o.com/meteostations listet die verfügbaren aktuelle Wetterstationen auf.",
                 "title": "Aktuelles Wetter"

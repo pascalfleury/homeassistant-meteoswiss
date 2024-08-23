@@ -50,7 +50,9 @@
             "user_three": {
                 "data": {
                     "station": "Estación meteorológica en tiempo real",
-                    "real_time_name": "Nombres de las entidades en tiempo real"
+                    "real_time_name": "Nombres de las entidades de la estación meteorológica",
+                    "precipitation_station": "Estación de precipitación en tiempo real",
+                    "real_time_precipitation_name": "Nombres de las entidades de la estación de precipitación"
                 },
                 "description": "The real-time weather station is used to look up the current weather at the station and provide them as sensors.  Selecting the first option of the list disables real-time weather sensors.\n\nIf a weather station is selected, the real-time entity names field is used to name the real-time (sensor) entities.  If no station is chosen, the real-time entity names field is ignored.\n\nhttps://rudd-o.com/meteostations lists the available real-time weather stations.",
                 "title": "Estación meteorológica en tiempo real"

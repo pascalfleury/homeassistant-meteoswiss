@@ -49,8 +49,10 @@
             },
             "user_three": {
                 "data": {
-                    "station": "Staziun meteorologica per propi",
-                    "real_time_name": "Nums d'unitad per propi"
+                    "Staziun": "Staziun meteorologia per propi",
+                    "real_time_name": "Nums d'unitad per propi",
+                    "precipitation_station": "Staziun da precipitaziuns per propi",
+                    "real_time_precipitation_name": "Drecipitaziuns en temp real"
                 },
                 "description": "La staziun meteorologica per propi serva a sondar l'aura actuala a la staziun e la furnescha sco sensurs. Eleger l'emprima varianta da la glista impedescha sensurs da l'aura en temp real.\n\nI vegn tschernida ina staziun meteorologica, serva ils nums da las unitads en temp real, il champ per numnar las unitads en temp real (sensurs).  Sch'i na vegn tschernida nagina staziun, ignoreschan ins ils nums dal sectur real.\nhttps://rudd-o.com/meteostations numna las staziuns meteorologicas che stattan a disposiziun.",
                 "title": "Aura per propi"

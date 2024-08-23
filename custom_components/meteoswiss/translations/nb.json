@@ -49,8 +49,10 @@
             },
             "user_three": {
                 "data": {
-                    "station": "Sanntids værstasjon",
-                    "real_time_name": "Real-time entity names"
+                    "station": "Sanntidsværstasjon",
+                    "real_time_name": "Navn på sanntids- og vær-entiteter",
+                    "precipitation_station": "Sanntids-nedbørstasjon",
+                    "real_time_precipitation_name": "Navn på sanntids- og nedbørs-entiteter"
                 },
                 "description": "Sanntids værstatonen brukes til å lete opp aktuell været ved stasjonen og å gi disse som sensorer. Hvis du velger første alternativ i listen, deaktiverer dette sanntids- og sensorenheter.\\n\\nHvis en værstasjon blir valgt, brukes feltet for navn på sanntids- og sensorenheter til å navngi sanntids- (sensore) enheter. Hvis ingen stasjon blir valgt, ignoreres feltet for navn på sanntids- og sensorenheter.\\n\\nhttps://rudd-o.com/meteostations viser listen over tillgjengelige sanntids værstationer.",
                 "title": "Sanntidsvær"

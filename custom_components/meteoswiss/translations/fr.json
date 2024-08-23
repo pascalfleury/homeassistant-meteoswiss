@@ -50,7 +50,9 @@
             "user_three": {
                 "data": {
                     "station": "Station météo en temps réel",
-                    "real_time_name": "Noms des entités en temps réel"
+                    "real_time_name": "Noms des entités météo",
+                    "precipitation_station": "Station météo en temps réel pour la précipitation",
+                    "real_time_precipitation_name": "Noms des entités pour la précipitation"
                 },
                 "description": "La station météorologique en temps réel est utilisée pour consulter les conditions météorologiques actuelles de la station et les fournir en tant que capteur. La sélection de la première option de la liste désactive les capteurs en temps réel. \n- Si une station météorologique est sélectionnée, le champ des noms d'entités en temps réel est utilisé pour nommer les entités en temps réel (capteurs). Si aucune station n'est choisie, le champ des noms des entités en temps réel est ignoré.\n- https://rudd-o.com/meteostations dresse la liste des stations météorologiques en temps réel disponibles.",
                 "title": "Météo en temps réel"
