@@ -1,16 +1,16 @@
 {
     "issues": {
         "deprecated_yaml": {
-            "title": "La configuración Meteo Swiss mediante YAML configuration está obsoleta",
-            "description": "Configurar Meteo Swiss mediante YAML será removida a futuro.\n\nSu configuración existente ha sido importada automáticamente a su interfaz de usuario.\n\nRemueva la sección de configuración de Swiss Meteo configuration de su archivo configuration.yaml file y reinicie Home Assistant para solucionar esta advertencia."
+            "title": "La configuración MeteoSwiss mediante YAML configuration está obsoleta",
+            "description": "Configurar MeteoSwiss mediante YAML será removida a futuro.\n\nSu configuración existente ha sido importada automáticamente a su interfaz de usuario.\n\nRemueva la sección de configuración de Swiss Meteo configuration de su archivo configuration.yaml file y reinicie Home Assistant para solucionar esta advertencia."
         },
         "station_no_data": {
             "title": "Una estación meteorológica de tiempo real parece estar ausente",
-            "description": "La estación de tiempo real que se usa en Meteo Swiss ({station}) parece ya no ofrecer datos.\n\nDe momento, la única reparación posible es remover esta integración y volver a agregarla, seleccionande una nueva estación meteorológica.\n\nHasta que esta reparación sea efectuada, sus sensores y el estado del tiempo actual aparecerán como no disponibles."
+            "description": "La estación de tiempo real que se usa en MeteoSwiss ({station}) parece ya no ofrecer datos.\n\nDe momento, la única reparación posible es remover esta integración y volver a agregarla, seleccionande una nueva estación meteorológica.\n\nHasta que esta reparación sea efectuada, sus sensores y el estado del tiempo actual aparecerán como no disponibles."
         },
         "improperly_configured": {
-            "title": "La integración  Meteo Swiss no está correctamente configurada",
-            "description": "La integración Meteo Swiss con ID {entry_id} no está correctamente configurada.\n\nPor favor elimine esa entrada de configuración y vuelva a recrearla."
+            "title": "La integración MeteoSwiss no está correctamente configurada",
+            "description": "La integración MeteoSwiss con ID {entry_id} no está correctamente configurada.\n\nPor favor elimine esa entrada de configuración y vuelva a recrearla."
         }
     },
     "config": {
