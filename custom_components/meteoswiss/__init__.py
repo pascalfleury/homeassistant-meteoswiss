@@ -4,17 +4,18 @@ import datetime
 import logging
 import pprint
 import time
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from async_timeout import timeout
 from hamsclientfork import meteoSwissClient
 from hamsclientfork.client import ClientResult
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import Config, HomeAssistant
+from homeassistant.core import HomeAssistant
 from homeassistant.core import HomeAssistant as HomeAssistantType
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.issue_registry import IssueSeverity
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -36,7 +37,7 @@ PLATFORMS = [Platform.SENSOR, Platform.WEATHER]
 MAX_CONTINUOUS_ERROR_TIME = 60 * 60
 
 
-async def async_setup(hass: HomeAssistant, config: Config):
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> Literal[True]:
     """Setup via old entry in configuration.yaml."""
     _LOGGER.debug("Async setup: meteoswiss")
 
@@ -53,7 +54,7 @@ async def async_setup(hass: HomeAssistant, config: Config):
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     _LOGGER.debug("Current configuration: %s", entry.data)
@@ -114,7 +115,7 @@ async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
+async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(
         entry,
@@ -134,7 +135,7 @@ class MeteoSwissClientResult(ClientResult):
     real_time_name: str
 
 
-class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResult]):
     """Class to manage fetching MeteoSwiss data API."""
 
     data: MeteoSwissClientResult
@@ -171,7 +172,7 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 update_interval,
             )
 
-        self.client = meteoSwissClient(
+        self.client = meteoSwissClient(  # type:ignore[no-untyped-call]
             "%s / %s" % (forecast_name, real_time_name),
             post_code,
             station if station else "NO STATION",
@@ -195,7 +196,7 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except Exception as exc:
             raise UpdateFailed(exc) from exc
 
-        _LOGGER.debug("Data obtained:\n%s", pprint.pformat(data))
+        _LOGGER.debug("Data obtained (%s):\n%s", type(data), pprint.pformat(data))
         if self.station:
             if not data.get("condition"):
                 # Oh no.  We could not retrieve the URL.
@@ -232,8 +233,9 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.first_error = None
                 self.error_raised = False
 
-        data[CONF_STATION] = self.station
-        data[CONF_POSTCODE] = self.post_code
-        data[CONF_FORECAST_NAME] = self.forecast_name
-        data[CONF_REAL_TIME_NAME] = self.real_time_name
-        return cast(MeteoSwissClientResult, data)
+        newdata = cast(MeteoSwissClientResult, data)
+        newdata[CONF_STATION] = self.station  # type:ignore[literal-required]
+        newdata[CONF_POSTCODE] = self.post_code  # type:ignore[literal-required]
+        newdata[CONF_FORECAST_NAME] = self.forecast_name  # type:ignore[literal-required]
+        newdata[CONF_REAL_TIME_NAME] = self.real_time_name  # type:ignore[literal-required]
+        return newdata

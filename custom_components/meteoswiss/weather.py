@@ -1,10 +1,11 @@
 """Support for the MeteoSwiss service."""
+
 from __future__ import annotations
 
 import logging
-from typing import cast
+from typing import Any, cast
 
-from hamsclientfork.client import DayForecast
+from hamsclientfork.client import CurrentCondition, DayForecast
 from homeassistant.components.weather import (
     ATTR_FORECAST_CONDITION,
     ATTR_FORECAST_NATIVE_PRECIPITATION,
@@ -17,10 +18,10 @@ from homeassistant.components.weather import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    STATE_UNAVAILABLE,
     UnitOfPressure,
     UnitOfSpeed,
     UnitOfTemperature,
-    STATE_UNAVAILABLE,
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -53,29 +54,32 @@ async def async_setup_entry(
     async_add_entities([MeteoSwissWeather(entry.entry_id, c)], True)
 
 
-def condition_name_to_value(condition, name: str) -> float | None:
+def condition_name_to_value(
+    condition: None | list[CurrentCondition], name: str
+) -> float | None:
     if not condition:
         # Real-time weather station provides no data.
-        return
+        return None
     try:
         row = condition[0]
     except Exception:
         _LOGGER.exception("Current condition has no rows: %s", condition)
-        return
+        return None
     try:
-        value = row[name]
+        value = row[name]  # type:ignore[literal-required]
     except Exception:
         _LOGGER.exception("Current condition has no value for %s", name)
-        return
+        return None
     if value is None or value == "-":
         _LOGGER.debug(
             "Value %s of current condition is %s, so not available", name, value
         )
-        return
+        return None
     try:
         return float(value)
     except Exception:
         _LOGGER.exception("Error converting %s to float", value)
+        return None
 
 
 class MeteoSwissWeather(
@@ -112,42 +116,42 @@ class MeteoSwissWeather(
         self.async_write_ha_state()
 
     @property
-    def name(self):
+    def name(self) -> Any:
         return self._displayName
 
     @property
-    def native_temperature(self):
+    def native_temperature(self) -> float | None:
         return condition_name_to_value(self._condition, "tre200s0")
 
     @property
-    def native_pressure(self):
+    def native_pressure(self) -> float | None:
         return condition_name_to_value(self._condition, "prestas0")
 
     @property
-    def pressure_qff(self):
+    def pressure_qff(self) -> float | None:
         return condition_name_to_value(self._condition, "pp0qffs0")
 
     @property
-    def pressure_qnh(self):
+    def pressure_qnh(self) -> float | None:
         return condition_name_to_value(self._condition, "pp0qnhs0")
 
     @property
-    def humidity(self):
+    def humidity(self) -> float | None:
         return condition_name_to_value(self._condition, "ure200s0")
 
     @property
-    def native_wind_speed(self):
+    def native_wind_speed(self) -> float | None:
         return condition_name_to_value(self._condition, "fu3010z0")
 
     @property
-    def wind_bearing(self):
+    def wind_bearing(self) -> float | None:
         return condition_name_to_value(self._condition, "dkl010z0")
 
     @property
-    def state(self):
+    def condition(self) -> str | None:
         symbolId = self._forecastData["currentWeather"]["icon"]
         try:
-            cond = next(
+            cond: str | None = next(
                 (k for k, v in CONDITION_CLASSES.items() if int(symbolId) in v),
                 None,
             )
@@ -173,7 +177,7 @@ class MeteoSwissWeather(
             return STATE_UNAVAILABLE
 
     @property
-    def attribution(self):
+    def attribution(self) -> str:
         a = "Data provided by MeteoSwiss."
         a += "  Forecasts from postal code %s." % (self._attr_post_code,)
         if self._attr_station:
@@ -190,20 +194,13 @@ class MeteoSwissWeather(
         for untyped_forecast in self._forecastData["regionForecast"]:
             try:
                 forecast = cast(DayForecast, untyped_forecast)
-                data_out = {}
-                data_out[ATTR_FORECAST_TIME] = forecast["dayDate"]
-                data_out[ATTR_FORECAST_NATIVE_TEMP_LOW] = float(
-                    forecast["temperatureMin"],
-                )
-                data_out[ATTR_FORECAST_NATIVE_TEMP] = float(
-                    forecast["temperatureMax"],
-                )
-                data_out[ATTR_FORECAST_CONDITION] = CONDITION_MAP.get(
-                    forecast["iconDay"]
-                )
-                data_out[ATTR_FORECAST_NATIVE_PRECIPITATION] = float(
-                    forecast["precipitation"],
-                )
+                data_out: Forecast = {
+                    ATTR_FORECAST_TIME: forecast["dayDate"],
+                    ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
+                    ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
+                    ATTR_FORECAST_CONDITION: CONDITION_MAP.get(forecast["iconDay"]),
+                    ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitation"],
+                }
                 _LOGGER.debug("Appending forecast: %s", data_out)
                 fcdata_out.append(data_out)
             except Exception as e:
@@ -213,8 +210,13 @@ class MeteoSwissWeather(
     @property
     def forecast(self) -> list[Forecast]:
         """Return the forecast array."""
-        return self._forecast()
+        return self._forecast() or []
 
-    async def async_forecast_daily(self) -> list[Forecast] | None:
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return bool(self._forecast())
+
+    async def async_forecast_daily(self) -> list[Forecast]:
         """Return the daily forecast in native units."""
-        return self._forecast()
+        return self._forecast() or []

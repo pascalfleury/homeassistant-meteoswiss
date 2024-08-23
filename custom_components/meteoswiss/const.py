@@ -17,7 +17,6 @@ from homeassistant.const import (
 
 DOMAIN = "meteoswiss"
 CONF_FORECAST_NAME = "forecast_name"
-CONF_NAME = CONF_NAME
 CONF_POSTCODE = "postcode"
 CONF_REAL_TIME_NAME = "real_time_name"
 CONF_STATION = "station"
