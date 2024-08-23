@@ -19,6 +19,8 @@
             "unknown": "Error desconocido; por favor intente más tarde"
         },
         "error": {
+            "cannot_query_address": "OpenStreetMap no pudo inferir su dirección; por favor entre la información manualmente",
+            "cannot_query_postcode": "OpenStreetMap no pudo inferir su código postal; por favor entre la información manualmente",
             "lat": "La latitud especificada no está entre -90 y 90 grados",
             "lon": "La longitud especificada no está entre -180 y 180 grados",
             "invalid_station_name": "Estación inválida (deben ser 3 caracteres); verifique las estaciones aquí: https://rudd-o.com/meteostations",

@@ -19,8 +19,10 @@
             "unknown": "Unknown error: please retry later"
         },
         "error": {
+            "cannot_query_address": "OpenStreetMap refused to guess the address for your location; please enter the information manually",
+            "cannot_query_postcode": "OpenStreetMap refused to guess the postal code for your location; please enter the information manually",
             "lat": "The supplied latitude does not fall between -90 y 90 degrees",
-            "lon": "The supplied latitude does not fall between -180 y 180 degrees",
+            "lon": "The supplied longitude does not fall between -180 y 180 degrees",
             "invalid_station_name": "Station name is invalid; please check https://rudd-o.com/meteostations for station list",
             "invalid_postcode": "Postal code is invalid; this integration only works with Swiss postal codes",
             "forecast_name_empty": "Forecast name cannot be empty",

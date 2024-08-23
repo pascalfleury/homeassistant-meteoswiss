@@ -5,14 +5,14 @@ from __future__ import annotations
 from typing import Final
 
 from homeassistant.const import (
-    UnitOfPressure,
-    UnitOfSpeed,
-    UnitOfTemperature,
-    UnitOfIrradiance,
-    UnitOfTime,
     CONF_NAME,
     DEGREE,
     PERCENTAGE,
+    UnitOfIrradiance,
+    UnitOfPressure,
+    UnitOfSpeed,
+    UnitOfTemperature,
+    UnitOfTime,
 )
 
 DOMAIN = "meteoswiss"
@@ -27,6 +27,8 @@ CONF_LAT = "latitude"
 CONF_LON = "longitude"
 
 DEFAULT_UPDATE_INTERVAL = 5
+
+USER_AGENT = "Meteo Swiss Home Assistant integration"
 
 # Mapping for conditions vs icon ID of meteoswiss
 # ID < 100 for day icons
