@@ -127,7 +127,11 @@ will be able to update them.
 ## How to create a sensor that has the weather forecast data
 
 Here is a sample of a YAML-based trigger-powered template sensor that creates
-three different sensors from a service call every fifteen minutes.
+three different sensors from a service call every fifteen minutes.  From the
+sample code below, you are to modify the `entity_id` to match your own weather
+entity ID, then place the adjusted code within your Home Assistant's
+`configuration.yaml` file (under `template:` as exemplified below), then
+restart Home Assistant.
 
 ```yaml
 # ...
@@ -156,6 +160,37 @@ template:
         unique_id: 6344f875-4569-4c3f-ad8d-ad6bccc5bc61
         state: "{{ ((response_forecast_daily['weather.meteoswiss'].forecast[1].temperature) + (response_forecast_daily['weather.meteoswiss'].forecast[1].templow)) /2}}"
 ```
+
+You can also create a sensor that will have the list of hourly forecasts
+as an attribute you can consult:
+
+```yaml
+# ...
+template:
+# ...
+  - trigger:
+    - platform: state
+      entity_id: weather.biasca_circolo_della_riviera_distretto_di_riviera_2
+    - platform: homeassistant
+      event: start
+    - platform: event
+      event_type: event_template_reloaded
+    action:
+      - service: weather.get_forecasts
+        data:
+          type: hourly
+        target:
+          entity_id: weather.biasca_circolo_della_riviera_distretto_di_riviera_2
+        response_variable: hourly
+    sensor:
+      - name: Wettervorhersage Biasca Stuendlich
+        unique_id: weather_forecast_biasca_hourly
+        state: "{{ now().isoformat() }}"
+        attributes:
+          forecast: "{{ hourly['weather.biasca_circolo_della_riviera_distretto_di_riviera_2'].forecast }}"
+```
+
+That one is very useful to retract awnings and other smart home activities.
 
 ## Troubleshooting
   
