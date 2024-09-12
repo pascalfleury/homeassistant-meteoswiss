@@ -186,7 +186,7 @@ class MeteoSwissWeather(
     def condition(self) -> str | None:
         symbolId = self._forecastData["currentWeather"]["icon"]
         try:
-            cond: str | None = CODE_TO_CONDITION_MAP.get(symbolId, (None, None))[0]
+            cond: str | None = str(CODE_TO_CONDITION_MAP.get(symbolId, ("", None))[0]) or None
             if cond is None:
                 _LOGGER.error(
                     "Expected a known int for the forecast icon, not None",
@@ -239,9 +239,9 @@ class MeteoSwissWeather(
                     ATTR_FORECAST_TIME: forecast["dayDate"],
                     ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
                     ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
-                    ATTR_FORECAST_CONDITION: CODE_TO_CONDITION_MAP.get(
-                        forecast["iconDay"], (None, None)
-                    )[0],
+                    ATTR_FORECAST_CONDITION: str(CODE_TO_CONDITION_MAP.get(
+                        forecast["iconDay"], ("", None)
+                    )[0]) or None,
                     ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitation"],
                 }
                 fcdata_out.append(data_out)
