@@ -8,6 +8,10 @@
             "title": "Die MeteoSchweiz-Wetterstation scheint verschwunden zu sein",
             "description": "Die MeteoSchweiz-Wetterstation, die verwendet wird ({station}), bietet keine Daten mehr an.\\n\\nDerzeit ist es nur möglich, dies zu korrigieren, indem man den MeteoSchweiz-Integration entfernt und neu hinzufügt und eine neue Wetterstation auswählt.\\n\\nBis dieses Problem behoben ist, werden alle akuten Wetter-Sensoren und Berichte von dieser Station als unavailable angezeigt."
         },
+        "post_code_no_data": {
+            "title": "MeteoSuisse scheint keine Vorhersagen für die Postleitzahl bereitzustellen",
+            "description": "Die Postleitzahl {post_code} scheint keine Vorhersage verfügbar zu haben.\n\nAktuell ist nur eine mögliche Reparatur möglich, nämlich das Entfernen und erneute Hinzufügen der MeteoSuisse-Integration, Auswahl eines neuen Postcodes.\n\nBis zur Durchführung dieser Reparatur wird die Vorhersage als nicht verfügbar angezeigt."
+        },
         "improperly_configured": {
             "title": "Die MeteoSchweiz-Integration ist nicht richtig konfiguriert",
             "description": "Die MeteoSchweiz-Integration mit der ID {entry_id} ist nicht korrekt konfiguriert.\\n\\nBitte entfernen Sie ihre Konfigurations-Eintrag und erstellen Sie ihn wieder neu."

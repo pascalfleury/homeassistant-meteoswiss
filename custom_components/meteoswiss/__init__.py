@@ -138,6 +138,8 @@ class MeteoSwissClientResult(ClientResult):
     post_code: str
     forecast_name: str
     real_time_name: str
+    precipitation_station: str
+    real_time_precipitation_name: str
 
 
 class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResult]):
@@ -158,12 +160,14 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResu
     ) -> None:
         """Initialize."""
         self.first_error: dict[str, float | None] = {
-            CONF_REAL_TIME_NAME: False,
-            CONF_REAL_TIME_PRECIPITATION_NAME: False,
+            CONF_REAL_TIME_NAME: None,
+            CONF_REAL_TIME_PRECIPITATION_NAME: None,
+            CONF_POSTCODE: None,
         }
         self.error_raised = {
             CONF_REAL_TIME_NAME: False,
             CONF_REAL_TIME_PRECIPITATION_NAME: False,
+            CONF_POSTCODE: False,
         }
         self.hass = hass
         self.post_code = post_code
@@ -272,6 +276,41 @@ class MeteoSwissDataUpdateCoordinator(DataUpdateCoordinator[MeteoSwissClientResu
                         )
                     self.first_error[name] = None
                     self.error_raised[name] = False
+
+        if not data["forecast"]:
+            # Oh no.  The forecast is empty.
+            _LOGGER.warning(
+                "Post code %s provided us with no forecast",
+                self.post_code,
+            )
+            if self.first_error[CONF_POSTCODE] is None:
+                self.first_error[CONF_POSTCODE] = time.time()
+
+            m = MAX_CONTINUOUS_ERROR_TIME
+            last_error = time.time() - self.first_error[CONF_POSTCODE]
+            if not self.error_raised and last_error > m:
+                ir.async_create_issue(
+                    self.hass,
+                    DOMAIN,
+                    f"{self.post_code}_provides_no_forecast_{DOMAIN}",
+                    is_fixable=False,
+                    is_persistent=False,
+                    severity=IssueSeverity.ERROR,
+                    translation_key="post_code_no_data",
+                    translation_placeholders={
+                        "post_code": self.post_code,
+                    },
+                )
+                self.error_raised[CONF_POSTCODE] = True
+        else:
+            if self.error_raised[CONF_POSTCODE]:
+                ir.async_delete_issue(
+                    self.hass,
+                    DOMAIN,
+                    f"{self.post_code}_provides_no_forecast_{DOMAIN}",
+                )
+            self.first_error[CONF_POSTCODE] = None
+            self.error_raised[CONF_POSTCODE] = False
 
         newdata = cast(MeteoSwissClientResult, data)
         newdata[CONF_POSTCODE] = self.post_code  # type:ignore[literal-required]

@@ -233,7 +233,9 @@ class MeteoSwissWeather(
         return a
 
     def _daily_forecast(self) -> list[Forecast] | None:
-        fcdata_out = []
+        if not self._forecastData:
+            return None
+        fcdata_out: list[Forecast] = []
         # Skip the first element - it's the forecast for the current day
         try:
             for untyped_forecast in self._forecastData["regionForecast"]:
@@ -260,6 +262,8 @@ class MeteoSwissWeather(
         return fcdata_out
 
     def _hourly_forecast(self) -> list[Forecast] | None:
+        if not self._forecastData:
+            return None
         fcdata_out: list[Forecast] = []
         # Skip the first element - it's the forecast for the current day
         now = datetime.datetime.now(datetime.timezone.utc)
