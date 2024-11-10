@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 import logging
+import pprint
 from typing import Any, cast
 
 from hamsclientfork.client import CurrentCondition, DayForecast, HourlyForecast
@@ -186,7 +187,9 @@ class MeteoSwissWeather(
     def condition(self) -> str | None:
         symbolId = self._forecastData["currentWeather"]["icon"]
         try:
-            cond: str | None = str(CODE_TO_CONDITION_MAP.get(symbolId, ("", None))[0]) or None
+            cond: str | None = (
+                str(CODE_TO_CONDITION_MAP.get(symbolId, ("", None))[0]) or None
+            )
             if cond is None:
                 _LOGGER.error(
                     "Expected a known int for the forecast icon, not None",
@@ -232,21 +235,27 @@ class MeteoSwissWeather(
     def _daily_forecast(self) -> list[Forecast] | None:
         fcdata_out = []
         # Skip the first element - it's the forecast for the current day
-        for untyped_forecast in self._forecastData["regionForecast"]:
-            try:
+        try:
+            for untyped_forecast in self._forecastData["regionForecast"]:
                 forecast = cast(DayForecast, untyped_forecast)
                 data_out: Forecast = {
                     ATTR_FORECAST_TIME: forecast["dayDate"],
                     ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
                     ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
-                    ATTR_FORECAST_CONDITION: str(CODE_TO_CONDITION_MAP.get(
-                        forecast["iconDay"], ("", None)
-                    )[0]) or None,
+                    ATTR_FORECAST_CONDITION: str(
+                        CODE_TO_CONDITION_MAP.get(forecast["iconDay"], ("", None))[0]
+                    )
+                    or None,
                     ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitation"],
                 }
                 fcdata_out.append(data_out)
-            except Exception as e:
-                _LOGGER.error("Error while computing forecast: %s", e)
+        except Exception as e:
+            _LOGGER.exception(
+                "Error while converting daily forecast: %s\nForecast data: %s",
+                e,
+                pprint.pformat(self._forecastData["regionForecast"]),
+            )
+            raise
         _LOGGER.debug("Daily forecast has %d items", len(fcdata_out))
         return fcdata_out
 
@@ -262,15 +271,25 @@ class MeteoSwissWeather(
             idx = biggers.index(True)
         except IndexError:
             return fcdata_out
-        for forecast in forecast_data[idx - 1 :]:
-            data_out: Forecast = {
-                ATTR_FORECAST_TIME: forecast["time"].isoformat("T").partition("+")[0]
-                + "Z",
-                ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
-                ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
-                ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitationMax"],
-            }
-            fcdata_out.append(data_out)
+        try:
+            for forecast in forecast_data[idx - 1 :]:
+                data_out: Forecast = {
+                    ATTR_FORECAST_TIME: forecast["time"]
+                    .isoformat("T")
+                    .partition("+")[0]
+                    + "Z",
+                    ATTR_FORECAST_NATIVE_TEMP_LOW: forecast["temperatureMin"],
+                    ATTR_FORECAST_NATIVE_TEMP: forecast["temperatureMax"],
+                    ATTR_FORECAST_NATIVE_PRECIPITATION: forecast["precipitationMax"],
+                }
+                fcdata_out.append(data_out)
+        except Exception as e:
+            _LOGGER.exception(
+                "Error while converting hourly forecast: %s\nForecast data: %s",
+                e,
+                pprint.pformat(self._forecastData["regionDailyForecast"]),
+            )
+            raise
         _LOGGER.debug("Hourly forecast has %d items", len(fcdata_out))
         return fcdata_out
 

@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from enum import Enum, StrEnum
-from typing import Final
+from enum import StrEnum
 
 from homeassistant.const import (
     CONF_NAME,
